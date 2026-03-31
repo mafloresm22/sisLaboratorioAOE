@@ -1,0 +1,86 @@
+-- 1. LIMPIEZA (Opcional: Borra todo para empezar de cero)
+DROP TABLE IF EXISTS DetallePrestamo CASCADE;
+DROP TABLE IF EXISTS Prestamo CASCADE;
+DROP TABLE IF EXISTS Instrumento CASCADE;
+DROP TABLE IF EXISTS Usuarios CASCADE;
+DROP TABLE IF EXISTS Laboratorios CASCADE;
+DROP TABLE IF EXISTS Unidad CASCADE;
+DROP TABLE IF EXISTS EstadoConservacion CASCADE;
+DROP TABLE IF EXISTS Rol CASCADE;
+
+-- 2. TABLAS MAESTRAS
+CREATE TABLE Rol (
+    idRol SERIAL PRIMARY KEY,
+    nombreRol VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE EstadoConservacion (
+    idEstadoCons SERIAL PRIMARY KEY,
+    nombreEstado VARCHAR(50) NOT NULL UNIQUE -- 'Nuevo', 'Bueno', 'Regular', 'Malo'
+);
+
+CREATE TABLE Unidad (
+    idUnidad SERIAL PRIMARY KEY,
+    nombreUnidad VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE Laboratorios (
+    idLaboratorios SERIAL PRIMARY KEY,
+    nombreLaboratorios VARCHAR(100) NOT NULL,
+    estadoLaboratorios VARCHAR(50) DEFAULT 'disponible'
+);
+
+-- 3. USUARIOS E INVENTARIO
+CREATE TABLE Usuarios (
+    idUsuarios SERIAL PRIMARY KEY,
+    nombreUsuarios VARCHAR(100) NOT NULL,
+    passwordUsuarios TEXT NOT NULL,
+    rolId INTEGER REFERENCES Rol(idRol) ON DELETE SET NULL
+);
+
+CREATE TABLE Instrumento (
+    idInstrumento SERIAL PRIMARY KEY,
+    nombreInstrumento VARCHAR(150) NOT NULL,
+    descripcionInstrumento TEXT,
+    cantidadInstrumento INTEGER DEFAULT 0 CHECK (cantidadInstrumento >= 0),
+    marcaInstrumento VARCHAR(100),
+    modeloInstrumento VARCHAR(100),
+    serieInstrumento VARCHAR(100),
+    colorInstrumento VARCHAR(50),
+    tamanoInstrumento VARCHAR(50),
+    pisoInstrumento VARCHAR(50),
+    idEstadoCons INTEGER REFERENCES EstadoConservacion(idEstadoCons),
+    usuarioId INTEGER REFERENCES Usuarios(idUsuarios),
+    laboratorioId INTEGER REFERENCES Laboratorios(idLaboratorios),
+    unidadId INTEGER REFERENCES Unidad(idUnidad),
+    imagenInstrumento VARCHAR(255),
+    estado VARCHAR(20) DEFAULT 'Disponible' -- 'Disponible', 'Prestado', 'Mantenimiento'
+);
+
+-- 4. SISTEMA DE PRÉSTAMOS (RELACIÓN N a N)
+CREATE TABLE Prestamo (
+    idPrestamo SERIAL PRIMARY KEY,
+    usuarioId INTEGER REFERENCES Usuarios(idUsuarios) ON DELETE CASCADE,
+    fechaSolicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estadoPrestamo VARCHAR(20) DEFAULT 'Pendiente' -- 'Activo', 'Finalizado', 'Atrasado'
+);
+
+CREATE TABLE DetallePrestamo (
+    idDetalle SERIAL PRIMARY KEY,
+    prestamoId INTEGER REFERENCES Prestamo(idPrestamo) ON DELETE CASCADE,
+    instrumentoId INTEGER REFERENCES Instrumento(idInstrumento) ON DELETE CASCADE,
+    cantidadSolicitada INTEGER NOT NULL CHECK (cantidadSolicitada > 0),
+    fechaDevolucion TIMESTAMP, -- Fecha real en que se devolvió
+    estadoEntrega VARCHAR(50),  -- Cómo se entregó (ej: Bueno)
+    estadoDevolucion VARCHAR(50) -- Cómo regresó (ej: Bueno, Dañado)
+);
+
+-- 5. DATOS INICIALES (SEED)
+INSERT INTO Rol (nombreRol) VALUES ('Administrador'), ('Docente');
+INSERT INTO EstadoConservacion (nombreEstado) VALUES ('Nuevo'), ('Bueno'), ('Regular'), ('Malo');
+INSERT INTO Laboratorios (nombreLaboratorios) VALUES ('Lab. Biología'), ('Lab. Física'), ('Lab. Química'), ('Aula Ecologica');
+INSERT INTO Unidad (nombreUnidad) VALUES ('un.'), ('kg'), ('m'), ('cm'), ('caj'), ('gr');
+
+-- Usuario administrador por defecto (password: admin123 - deberías usar hash en producción)
+INSERT INTO Usuarios (nombreUsuarios, passwordUsuarios, rolId) 
+VALUES ('WalFo', 'martell22', 1);
