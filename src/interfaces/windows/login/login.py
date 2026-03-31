@@ -3,6 +3,7 @@ from services.auth_service import AuthService
 from tkinter import messagebox
 from PIL import Image
 from interfaces.components.mensajes import Alerts
+from interfaces.windows.dashboard.dashboard import DashboardWindow
 import os
 
 class LoginWindow(ctk.CTk):
@@ -82,7 +83,7 @@ class LoginWindow(ctk.CTk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         x = (screen_width // 2) - (width // 2)
-        y = (screen_height // 2) - (height // 2)
+        y = (screen_height // 2) - (height // 2) - 40
         self.geometry(f"{width}x{height}+{x}+{y}")
 
     def animate_entry(self):
@@ -108,6 +109,13 @@ class LoginWindow(ctk.CTk):
         usuario_encontrado = AuthService.verificar_credenciales(user, pw)
         if usuario_encontrado:
             Alerts.show_success("Éxito", f"¡Bienvenido, {usuario_encontrado['nombre']}!", master=self)
-            self.destroy()
+            
+            self.entry_user.delete(0, 'end')
+            self.entry_password.delete(0, 'end')
+            self.check_show_password.deselect()
+            self.entry_password.configure(show="*")
+            
+            self.withdraw() 
+            dash = DashboardWindow(master=self, usuario=usuario_encontrado)
         else:
             Alerts.show_error("Error", "Los datos ingresados son incorrectos.", master=self)

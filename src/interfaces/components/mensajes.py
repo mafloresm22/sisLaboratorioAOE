@@ -55,7 +55,7 @@ class Swal:
         lbl_msg = ctk.CTkLabel(main_frame, text=text, font=("Arial", 15), text_color="#545454", wraplength=400, justify="center")
         lbl_msg.pack(pady=(0, 30))
         
-        # Botón OK característico de SweetAlert (Azul púrpura #7066e0)
+        # Botón OK
         btn_ok = ctk.CTkButton(
             main_frame, text="OK", width=120, height=45, font=("Arial", 16, "bold"),
             fg_color="#7066e0", hover_color="#5a52b3", corner_radius=5,
