@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from interfaces.windows.login_window import LoginWindow
+from interfaces.windows.login.login_window import LoginWindow
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("light")

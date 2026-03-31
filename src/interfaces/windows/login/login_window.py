@@ -2,6 +2,7 @@ import customtkinter as ctk
 from services.auth_service import AuthService
 from tkinter import messagebox
 from PIL import Image
+from interfaces.components.mensajes import Alerts
 import os
 
 class LoginWindow(ctk.CTk):
@@ -26,7 +27,7 @@ class LoginWindow(ctk.CTk):
         self.main_frame = ctk.CTkFrame(self, fg_color="#186ccf", corner_radius=0)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
 
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
         # 1. Imagen del científico (Al fondo de los adornos)
         img_path_scientist = os.path.join(base_dir, "assets", "img", "innovative-scientist-explores-virtual-reality-in-cartoon-laboratory-engaging-educational-concepts-in-a-colorful-environment-free-png.png")
@@ -102,11 +103,11 @@ class LoginWindow(ctk.CTk):
         user = self.entry_user.get()
         pw = self.entry_password.get()
         if not user or not pw:
-            messagebox.showwarning("Campos vacíos", "Por favor completa usuario y contraseña.")
+            Alerts.show_warning("Campos vacíos", "Por favor completa usuario y contraseña.", master=self)
             return
         usuario_encontrado = AuthService.verificar_credenciales(user, pw)
         if usuario_encontrado:
-            messagebox.showinfo("Éxito", f"¡Bienvenido, {usuario_encontrado['nombre']}!")
+            Alerts.show_success("Éxito", f"¡Bienvenido, {usuario_encontrado['nombre']}!", master=self)
             self.destroy()
         else:
-            messagebox.showerror("Error", "Los datos ingresados son incorrectos.")
+            Alerts.show_error("Error", "Los datos ingresados son incorrectos.", master=self)
