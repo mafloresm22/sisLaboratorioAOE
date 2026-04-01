@@ -21,14 +21,15 @@ class Swal:
 
         # Comportamiento Modal estricto: bloquea la ventana de fondo
         modal.transient(master) 
+        modal.attributes("-topmost", True)
+        modal.lift()
         modal.grab_set() 
         
-        # Centrado perfecto sobre el programa principal
+        # Centrado sobre el master
         modal.update_idletasks()
-        master.update_idletasks()
-        x = master.winfo_x() + (master.winfo_width() // 2) - (450 // 2)
+        x = master.winfo_x() + (master.winfo_width() // 2) - (390 // 2)
         y = master.winfo_y() + (master.winfo_height() // 2) - (380 // 2)
-        modal.geometry(f"+{x}+{y}")
+        modal.geometry(f"+{max(0, x)}+{max(0, y)}")
         
         # Paleta de colores
         icons = {

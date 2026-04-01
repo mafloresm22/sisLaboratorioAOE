@@ -2,6 +2,7 @@ import customtkinter as ctk
 from interfaces.components.mensajes import Alerts
 from PIL import Image
 import os
+from interfaces.windows.roles.roles import RolesFrame
 
 class ModuleCard(ctk.CTkFrame):
     def __init__(self, master, title, icon, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
@@ -240,8 +241,11 @@ class DashboardWindow(ctk.CTkToplevel):
 
         # --- 3. SUB-VISTAS DE MÓDULOS ---
         for mod_name in module_submenus:
-            frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-            ctk.CTkLabel(frame, text=f"Administración de {mod_name}", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
+            if mod_name == "Roles":
+                frame = RolesFrame(self.main_content)
+            else:
+                frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
+                ctk.CTkLabel(frame, text=f"Administración de {mod_name}", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
             self.views[mod_name] = frame
 
         # --- 4. Vista USUARIOS ---
