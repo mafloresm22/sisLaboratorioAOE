@@ -4,6 +4,7 @@ from PIL import Image
 import os
 from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
+from interfaces.windows.usuarios.usuarios import UsuariosFrame
 
 class ModuleCard(ctk.CTkFrame):
     def __init__(self, master, title, icon_path, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
@@ -278,9 +279,7 @@ class DashboardWindow(ctk.CTkToplevel):
             self.views[mod_name] = frame
 
         # --- 4. Vista USUARIOS ---
-        user_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-        ctk.CTkLabel(user_frame, text="Administración de Usuarios", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
-        self.views["Usuarios"] = user_frame
+        self.views["Usuarios"] = UsuariosFrame(self.main_content)
         
         # --- 5. Vista INVENTARIO ---
         inv_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)

@@ -1,14 +1,14 @@
 import customtkinter as ctk
 from PIL import Image
 import os
-from interfaces.windows.roles.create_roles import CreateRoleModal
-from interfaces.windows.roles.edit_roles import EditRoleModal
-from interfaces.windows.roles.delete_roles import DeleteRoleModal
-from services.Roles.roles import RoleService
+from services.usuarios.usuarios import UsuarioService
+# from interfaces.windows.usuarios.create_usuarios import CreateUsuarioModal
+# from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
+# from interfaces.windows.usuarios.delete_usuarios import DeleteUsuarioModal
 
-class SmallBox(ctk.CTkFrame):
-    """Tarjeta de Rol estilizada (versión compacta con acciones)."""
-    def __init__(self, master, title, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
+class UserBox(ctk.CTkFrame):
+    """Tarjeta de Usuario estilizada."""
+    def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
         super().__init__(master, fg_color=bg_color, corner_radius=15, height=140)
         self.pack_propagate(False)
         
@@ -16,11 +16,20 @@ class SmallBox(ctk.CTkFrame):
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.header_frame.pack(fill="x", padx=15, pady=(15, 0))
         
-        # Título del Rol
-        self.lbl_title = ctk.CTkLabel(self.header_frame, text=title, font=("Arial", 18, "bold"), text_color="white")
-        self.lbl_title.pack(side="left")
+        # Nombre de Usuario
+        self.lbl_user = ctk.CTkLabel(self.header_frame, text=username, font=("Arial", 19, "bold"), text_color="white")
+        self.lbl_user.pack(anchor="w")
         
-        # --- Footer con Botones de Acción CIRCULARES ---
+        # Rol debajo (Más grande y resaltado si es Admin)
+        is_admin = role_name.lower() == "administrador"
+        role_display = f"🛡️ {role_name}" if is_admin else role_name
+        role_font = ("Arial", 15, "bold") if is_admin else ("Arial", 14)
+        role_color = "#ffffff" if is_admin else "#e0e0e0"
+
+        self.lbl_role = ctk.CTkLabel(self.header_frame, text=role_display, font=role_font, text_color=role_color)
+        self.lbl_role.pack(anchor="w", pady=(2, 0))
+        
+        # --- Footer con Botones de Acción ---
         self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.actions_frame.pack(side="bottom", fill="x", padx=12, pady=12)
         
@@ -53,75 +62,69 @@ class SmallBox(ctk.CTkFrame):
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(70, 70))
             self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
         except Exception:
-            self.lbl_icon = ctk.CTkLabel(self, font=("Segoe UI Emoji", 80), text_color="#ffffff")
+            # Fallback simple si no hay icono
+            self.lbl_icon = ctk.CTkLabel(self, font=("Segoe UI Emoji", 80), text="👤", text_color="#ffffff")
             
         self.lbl_icon.place(relx=0.88, rely=0.35, anchor="center")
 
-class RolesFrame(ctk.CTkFrame):
+class UsuariosFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.configure(fg_color="white", corner_radius=15)
         
-        # Configurar grilla: 
-        # Columna 0: Tabla de Roles (80%)
-        # Columna 1: Línea vertical (1px)
-        # Columna 2: Estadísticas (20%)
+        # Grilla de 3 columnas (80% listado, 20% stats)
         self.grid_columnconfigure(0, weight=4)
         self.grid_columnconfigure(1, weight=0)
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         # ==========================================
-        # 1. SECCIÓN IZQUIERDA: LISTADO DE ROLES
+        # 1. SECCIÓN IZQUIERDA: LISTADO DE USUARIOS
         # ==========================================
         self.left_container = ctk.CTkFrame(self, fg_color="transparent")
         self.left_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
         
-        # Título de la sección
         self.lbl_title = ctk.CTkLabel(
             self.left_container, 
-            text="Administración de Roles", 
+            text="Administración de Usuarios", 
             font=("Arial", 28, "bold"), 
             text_color="#2c3e50"
         )
         self.lbl_title.pack(pady=(0, 20), anchor="w")
         
-        # Contenedor de cards (Scrolleable si hay muchos roles)
+        # Scrolleable de usuarios
         self.cards_scroll = ctk.CTkScrollableFrame(self.left_container, fg_color="transparent")
         self.cards_scroll.pack(fill="both", expand=True)
-        
         self.cards_scroll.grid_columnconfigure((0, 1, 2), weight=1)
-        self.load_role_cards()
+        
+        self.load_user_cards()
 
-        # ==========================================
-        # 2. SEPARADOR VERTICAL
-        # ==========================================
+        # Separador Vertical
         self.separator = ctk.CTkFrame(self, fg_color="#e0e0e0", width=2)
         self.separator.grid(row=0, column=1, sticky="ns", pady=40)
 
         # ==========================================
-        # 3. SECCIÓN DERECHA: ESTADÍSTICAS
+        # 2. SECCIÓN DERECHA: ESTADÍSTICAS
         # ==========================================
         self.right_container = ctk.CTkFrame(self, fg_color="transparent")
         self.right_container.grid(row=0, column=2, sticky="nsew", padx=20, pady=20)
         
-        # --- BOTÓN AGREGAR ROL ---
-        self.btn_add_role = ctk.CTkButton(
+        # Botón agregar usuario
+        self.btn_add_user = ctk.CTkButton(
             self.right_container, 
-            text="➕ Agregar Nuevo Rol", 
+            text="➕ Agregar Usuario", 
             font=("Arial", 16, "bold"),
             fg_color="#186ccf",
             hover_color="#145cb3",
             height=50,
             corner_radius=10,
-            command=self.on_add_role
+            command=self.on_add_user
         )
-        self.btn_add_role.pack(fill="x", pady=(0, 30))
+        self.btn_add_user.pack(fill="x", pady=(0, 30))
 
-        # --- ESTADÍSTICAS ---
         self.lbl_stats_title = ctk.CTkLabel(
             self.right_container, 
-            text="Resumen de Roles", 
+            text="Resumen de Usuarios", 
             font=("Arial", 20, "bold"), 
             text_color="#2c3e50"
         )
@@ -129,100 +132,76 @@ class RolesFrame(ctk.CTkFrame):
         
         self.load_statistics()
 
-    def on_add_role(self):
-        modal = CreateRoleModal(self.winfo_toplevel(), parent_view=self)
+    def on_add_user(self):
+        print("Abrir Modal Agregar Usuario")
+        # modal = CreateUsuarioModal(self.winfo_toplevel(), parent_view=self)
 
-    def on_edit_role(self, role):
-        modal = EditRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
+    def on_edit_user(self, user):
+        print(f"Editar Usuario: {user['nombreUsuarios']}")
+        # modal = EditUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
-    def on_delete_role(self, role):
-        modal = DeleteRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
+    def on_delete_user(self, user):
+        print(f"Eliminar Usuario: {user['nombreUsuarios']}")
+        # modal = DeleteUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
-    def load_role_cards(self):
+    def load_user_cards(self):
         for child in self.cards_scroll.winfo_children():
             child.destroy()
             
-        roles = RoleService.get_all_roles()
+        users = UsuarioService.get_all_usuarios()
         
-        if not roles:
-            # UI DE ESTADO VACÍO (No hay roles registrados)
+        if not users:
             empty_container = ctk.CTkFrame(self.cards_scroll, fg_color="transparent")
             empty_container.pack(fill="both", expand=True, pady=100)
-            
-            # Icono grande de "vacio" o "sin datos"
-            lbl_empty_icon = ctk.CTkLabel(
-                empty_container, 
-                text="👥", 
-                font=("Arial", 120), 
-                text_color="#d0d0d0"
-            )
+            lbl_empty_icon = ctk.CTkLabel(empty_container, text="👤", font=("Arial", 120), text_color="#d0d0d0")
             lbl_empty_icon.pack()
-            
-            # Texto Informativo
-            lbl_empty_text = ctk.CTkLabel(
-                empty_container, 
-                text="No hay Roles registrados", 
-                font=("Arial", 22, "bold"), 
-                text_color="#95a5a6"
-            )
+            lbl_empty_text = ctk.CTkLabel(empty_container, text="No hay Usuarios registrados", font=("Arial", 22, "bold"), text_color="#95a5a6")
             lbl_empty_text.pack(pady=20)
-            
-            # Subtexto descriptivo
-            lbl_hint = ctk.CTkLabel(
-                empty_container, 
-                text="Haz clic en 'Agregar Nuevo Rol' para comenzar", 
-                font=("Arial", 14), 
-                text_color="#bdc3c7"
-            )
-            lbl_hint.pack()
         else:
-            # Si hay roles, los mostramos como SmallBox
-            # Paleta de colores y mapeo de iconos profesionales
-            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-            icons_dir = os.path.join(base_dir, "assets", "icons", "roles_img")
+            icons_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")), "assets", "icons", "dashboard")
+            user_icon_path = os.path.join(icons_dir, "7816987_usuario.png")
             
-            colors = [
-                ("#17a2b8", "#138496", os.path.join(icons_dir, "13808994.png")), 
-                ("#28a745", "#218838", os.path.join(icons_dir, "2770460.png")),
-                ("#ffc107", "#e0a800", os.path.join(icons_dir, "3471381.png")),
-                ("#dc3545", "#c82333", os.path.join(icons_dir, "5403817.png")),
-                ("#6f42c1", "#59359a", os.path.join(icons_dir, "13030278.png"))
+            # Paleta de colores consistente con roles
+            paleta = [
+                ("#186ccf", "#145cb3"), 
+                ("#2e7d32", "#26662a"),
+                ("#ef6c00", "#d35400"),
+                ("#7b1fa2", "#661b87"),
+                ("#c62828", "#b02424")
             ]
             
-            for i, role in enumerate(roles):
+            for i, user in enumerate(users):
                 row = i // 3
                 col = i % 3
+                colors = paleta[i % len(paleta)]
                 
-                color_config = colors[i % len(colors)]
-                
-                card = SmallBox(
+                card = UserBox(
                     self.cards_scroll,
-                    title=role["nombreRol"],
-                    icon_path=color_config[2],
-                    bg_color=color_config[0],
-                    hover_color=color_config[1],
-                    on_edit=lambda r=role: self.on_edit_role(r),
-                    on_delete=lambda r=role: self.on_delete_role(r)
+                    username=user["nombreUsuarios"],
+                    role_name=user["nombreRol"],
+                    icon_path=user_icon_path,
+                    bg_color=colors[0],
+                    hover_color=colors[1],
+                    on_edit=lambda u=user: self.on_edit_user(u),
+                    on_delete=lambda u=user: self.on_delete_user(u)
                 )
                 card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
     def load_statistics(self):
-        # Limpiar estadísticas actuales
         for child in self.right_container.winfo_children():
-            if isinstance(child, ctk.CTkFrame) and not child == self.btn_add_role:
-                 if hasattr(child, 'is_stat') and child.is_stat:
-                    child.destroy()
+            if isinstance(child, ctk.CTkFrame) and getattr(child, 'is_stat', False):
+                child.destroy()
 
-        stats_data = RoleService.get_role_statistics()
+        stats_data = UsuarioService.get_usuario_statistics()
         
         # Rutas de iconos profesionales
         base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
         icons_dir = os.path.join(base_dir, "assets", "icons", "estadisticas")
         
         stats = [
-            {"label": "Total Roles", "value": str(stats_data['total_roles']), "icon_path": os.path.join(icons_dir, "15216915_permisos.png"), "color": "#186ccf"},
-            {"label": "Permisos Activos", "value": str(stats_data['active_permissions_count']), "icon_path": os.path.join(icons_dir, "16395792_activo.png"), "color": "#28a745"},
-            {"label": "Usuarios Sin Rol", "value": str(stats_data['users_without_role']), "icon_path": os.path.join(icons_dir, "393640_SinRol.png"), "color": "#ffc107"},
+            {"label": "Total Usuarios", "value": str(stats_data['total_usuarios']), "icon_path": os.path.join(icons_dir, "878516_usuarios.png"), "color": "#186ccf"},
+            {"label": "Admins", "value": str(stats_data['administradores']), "icon_path": os.path.join(icons_dir, "1295888_Admin.png"), "color": "#28a745"},
+            {"label": "Sin Rol", "value": str(stats_data['sin_rol']), "icon_path": os.path.join(icons_dir, "393640_SinRol.png"), "color": "#ffc107"},
         ]
         
         for stat in stats:
@@ -230,7 +209,7 @@ class RolesFrame(ctk.CTkFrame):
             stat_card.pack(fill="x", pady=10)
             stat_card.is_stat = True
             
-            # Cargar Icono
+            # Cargar Icono PNG
             try:
                 img = Image.open(stat["icon_path"])
                 ctk_img = ctk.CTkImage(light_image=img, size=(32, 32))
@@ -240,7 +219,6 @@ class RolesFrame(ctk.CTkFrame):
                 
             lbl_ico.pack(side="left", padx=15, pady=15)
             
-            # Texto a la derecha
             text_frame = ctk.CTkFrame(stat_card, fg_color="transparent")
             text_frame.pack(side="left", fill="both", expand=True)
             
