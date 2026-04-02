@@ -2,6 +2,8 @@ import customtkinter as ctk
 from PIL import Image
 import os
 from interfaces.windows.roles.create_roles import CreateRoleModal
+from interfaces.windows.roles.edit_roles import EditRoleModal
+from interfaces.windows.roles.delete_roles import DeleteRoleModal
 from services.Roles.roles import RoleService
 
 class SmallBox(ctk.CTkFrame):
@@ -126,6 +128,14 @@ class RolesFrame(ctk.CTkFrame):
         # Abrir el modal de creación pasándole una referencia a sí mismo para refrescar
         modal = CreateRoleModal(self.winfo_toplevel(), parent_view=self)
 
+    def on_edit_role(self, role):
+        # Abrir el modal de edición
+        modal = EditRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
+
+    def on_delete_role(self, role):
+        # Abrir el modal de confirmación de eliminación (estilo Swal)
+        modal = DeleteRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
+
     def load_role_cards(self):
         # Limpiar el contenedor (por si se llama para refrescar)
         for child in self.cards_scroll.winfo_children():
@@ -166,8 +176,6 @@ class RolesFrame(ctk.CTkFrame):
             lbl_hint.pack()
         else:
             # Si hay roles, los mostramos como SmallBox
-            # Se eliminan los selectores de variación (el simbolito invisible) 
-            # para que Windows renderice todos los iconos con exactamente el mismo tamaño base.
             colors = [
                 ("#17a2b8", "#138496", "🛡"), # Info
                 ("#28a745", "#218838", "⚙"), # Success
@@ -189,8 +197,8 @@ class RolesFrame(ctk.CTkFrame):
                     icon_text=color_config[2],
                     bg_color=color_config[0],
                     hover_color=color_config[1],
-                    on_edit=lambda r=role: print(f"Editar: {r['nombreRol']}"),
-                    on_delete=lambda r=role: print(f"Eliminar: {r['nombreRol']}")
+                    on_edit=lambda r=role: self.on_edit_role(r),
+                    on_delete=lambda r=role: self.on_delete_role(r)
                 )
                 card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 

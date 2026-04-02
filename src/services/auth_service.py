@@ -18,16 +18,31 @@ class AuthService:
         
         try:
             cursor = conn.cursor()
-            query = "SELECT idUsuarios, nombreUsuarios, passwordUsuarios, rolId FROM Usuarios WHERE nombreUsuarios = %s"
+            query = """
+                SELECT 
+                    u.idUsuarios, 
+                    u.nombreUsuarios, 
+                    u.passwordUsuarios, 
+                    u.rolId, 
+                    r.nombreRol 
+                FROM Usuarios u
+                JOIN Rol r ON u.rolId = r.idRol
+                WHERE u.nombreUsuarios = %s
+            """
             cursor.execute(query, (nombre_usuario,))
             usuario = cursor.fetchone()
             
             if usuario:
-                id_user, nombre, hash_almacenado, rol = usuario
+                id_user, nombre, hash_almacenado, rol_id, nombre_rol = usuario
                 
                 # bcrypt necesita los datos en formato bytes para comparar
                 if bcrypt.checkpw(password_ingresado.encode('utf-8'), hash_almacenado.encode('utf-8')):
-                    return {"id": id_user, "nombre": nombre, "rol": rol}
+                    return {
+                        "idUsuarios": id_user, 
+                        "nombreUsuarios": nombre, 
+                        "rolId": rol_id, 
+                        "nombreRol": nombre_rol
+                    }
             
             return None
         except Exception as e:

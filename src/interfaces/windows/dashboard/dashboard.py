@@ -43,16 +43,15 @@ class ModuleCard(ctk.CTkFrame):
 class DashboardWindow(ctk.CTkToplevel):
     def __init__(self, master=None, usuario=None):
         super().__init__(master)
+        self.views = {} # Inicializar temprano para evitar AttributeError en callbacks
         
-        # Al cerrar la ventana desde la X cerramos completamente la app (Login incluido)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-        # Para probar el inicio de sesion del usuario
-        self.usuario = usuario if usuario else {"nombre": "Administrador", "rol": 1}
+        # Para probar el inicio de sesion del usuario de acuerdo al esquema DB
+        self.usuario = usuario if usuario else {"nombreUsuarios": "Administrador", "rolId": 1, "nombreRol": "Administrador"}
         
         self.title("Sistema de Laboratorio")
-        self.geometry("1420x730")
-        self.center_window(1420, 730)
+        self.geometry("1470x765")
+        self.center_window(1470, 765)
         self.configure(fg_color="#f0f2f5")
 
         # Configurar grilla base: Fila 0 para navbar, Fila 1 para contenido
@@ -152,8 +151,17 @@ class DashboardWindow(ctk.CTkToplevel):
         except Exception:
             pass
 
-        self.lbl_user_name = ctk.CTkLabel(self.profile_frame, text=self.usuario['nombre'], font=("Arial", 14, "bold"), text_color="white")
-        self.lbl_user_name.pack(side="left", padx=(0, 15))
+        # Contenedor para Nombre y Rol
+        self.user_info_frame = ctk.CTkFrame(self.profile_frame, fg_color="transparent")
+        self.user_info_frame.pack(side="left", padx=(0, 8))
+
+        self.lbl_user_name = ctk.CTkLabel(self.user_info_frame, text=self.usuario.get('nombreUsuarios', 'Usuario'), font=("Arial", 14, "bold"), text_color="white", height=20)
+        self.lbl_user_name.pack(anchor="w", pady=(0, 0))
+        
+        rol_display = self.usuario.get('nombreRol', 'Sin Rol')
+        
+        self.lbl_user_role = ctk.CTkLabel(self.user_info_frame, text=rol_display, font=("Arial", 11), text_color="#d1d1d1", height=12)
+        self.lbl_user_role.pack(anchor="w", pady=0)
         
         # Botón de Cerrar Sesión (Icono de Power)
         img_path_power = os.path.join(base_dir, "assets", "img", "power-button_9734668.png")
@@ -182,8 +190,6 @@ class DashboardWindow(ctk.CTkToplevel):
         self.main_content = ctk.CTkFrame(self, fg_color="transparent")
         self.main_content.grid(row=1, column=0, sticky="nsew", padx=20, pady=20)
         
-        # Inicializar diccionario de vistas
-        self.views = {}
         self.create_views()
         
         # Iniciar en la pestaña "Inicio" al cargar el sistema

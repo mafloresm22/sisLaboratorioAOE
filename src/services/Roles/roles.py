@@ -46,7 +46,6 @@ class RoleService:
 
     @staticmethod
     def get_role_statistics():
-        """Obtiene las estadísticas de roles para el dashboard."""
         conn = DatabaseConnection.get_connection()
         stats = {"total_roles": 0, "active_permissions_count": 0, "users_without_role": 0}
         if not conn: return stats
@@ -62,4 +61,48 @@ class RoleService:
         except Exception as e:
             print(f"🔴 Error SQL Stats: {e}")
             return stats
+        finally: conn.close()
+        
+    @staticmethod
+    def update_role(id_rol, nuevo_nombre):
+        conn = DatabaseConnection.get_connection()
+        if not conn: return False
+        try:
+            cursor = conn.cursor()
+            # 1. Verificar si ya existe otro rol con ese nombre (ignorar el actual)
+            check_query = "SELECT idRol FROM Rol WHERE LOWER(nombreRol) = LOWER(%s) AND idRol <> %s"
+            cursor.execute(check_query, (nuevo_nombre.strip(), id_rol))
+            if cursor.fetchone():
+                return "exists"
+            
+            # 2. Actualizar
+            query = "UPDATE Rol SET nombreRol = %s WHERE idRol = %s"
+            cursor.execute(query, (nuevo_nombre.strip(), id_rol))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"🔴 Error SQL Update: {e}")
+            return False
+        finally: conn.close()
+
+    @staticmethod
+    def delete_role(id_rol):
+        conn = DatabaseConnection.get_connection()
+        if not conn: return False
+        try:
+            cursor = conn.cursor()
+            # 1. Verificar si tiene usuarios asociados para evitar errores de FK
+            check_query = "SELECT COUNT(*) FROM Usuarios WHERE rolId = %s"
+            cursor.execute(check_query, (id_rol,))
+            if cursor.fetchone()[0] > 0:
+                return "has_users"
+            
+            # 2. Eliminar
+            query = "DELETE FROM Rol WHERE idRol = %s"
+            cursor.execute(query, (id_rol,))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"🔴 Error SQL Delete: {e}")
+            return False
         finally: conn.close()

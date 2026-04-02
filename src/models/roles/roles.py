@@ -5,7 +5,7 @@ class Role:
 
     def to_dict(self):
         return {
-            "id": self.idRol,
-            "nombre": self.nombreRol
+            "idRol": self.idRol,
+            "nombreRol": self.nombreRol
         }
 

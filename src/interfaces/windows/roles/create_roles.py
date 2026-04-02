@@ -25,29 +25,30 @@ class CreateRoleModal(ctk.CTkToplevel):
         self.update_idletasks()
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        self.target_x = (screen_width // 2) - (self.width // 2)
+        self.target_x = ((screen_width // 2) - (self.width // 2)) + 150
         self.target_y = (screen_height // 2) - (self.height // 2)
         
         # Parámetros para la animación
         self.current_y = self.target_y - 80 
         self.geometry(f"{self.width}x{self.height}+{self.target_x}+{int(self.current_y)}")
         self.configure(fg_color="white")
+        self.attributes("-alpha", 1.0)
         
         # --- CONTENEDOR PRINCIPAL ---
         self.container = ctk.CTkFrame(self, fg_color="white", corner_radius=10, border_width=1, border_color="#e0e0e0")
         self.container.pack(fill="both", expand=True)
         
         # 1. HEADER
-        self.header = ctk.CTkFrame(self.container, fg_color="#f8f9fa", height=50, corner_radius=10)
+        self.header = ctk.CTkFrame(self.container, fg_color="#186ccf", height=50, corner_radius=10)
         self.header.pack(fill="x", side="top")
         self.header.pack_propagate(False)
         
-        self.lbl_title = ctk.CTkLabel(self.header, text="Crear Nuevo Rol", font=("Arial", 18, "bold"), text_color="#2c3e50")
+        self.lbl_title = ctk.CTkLabel(self.header, text="Crear Nuevo Rol", font=("Arial", 18, "bold"), text_color="white")
         self.lbl_title.pack(side="left", padx=20)
         
         self.btn_close = ctk.CTkButton(
             self.header, text="×", width=30, height=30, 
-            fg_color="transparent", text_color="#95a5a6", 
+            fg_color="transparent", text_color="white", 
             hover_color="#e74c3c", font=("Arial", 24),
             command=self.close_modal
         )
@@ -111,8 +112,39 @@ class CreateRoleModal(ctk.CTkToplevel):
 
     def close_modal(self):
         self.grab_release()
-        self.overlay.destroy()
-        self.destroy()
+        self.animate_exit()
+
+    def animate_exit(self):
+        try:
+            try:
+                alpha = float(self.attributes("-alpha"))
+                overlay_alpha = float(self.overlay.attributes("-alpha"))
+            except:
+                alpha = 1.0
+                overlay_alpha = 0.5
+
+            if alpha > 0:
+                # Bajar la posición y reducir opacidad
+                self.current_y += 10
+                new_alpha = max(0, alpha - 0.1)
+                new_overlay_alpha = max(0, overlay_alpha - 0.05)
+                
+                self.attributes("-alpha", new_alpha)
+                self.overlay.attributes("-alpha", new_overlay_alpha)
+                self.geometry(f"{self.width}x{self.height}+{self.target_x}+{int(self.current_y)}")
+                
+                self.after(10, self.animate_exit)
+            else:
+                self.overlay.destroy()
+                self.destroy()
+        except Exception:
+            # Fallback de seguridad para cerrar sin errores
+            try:
+                self.overlay.destroy()
+            except: pass
+            try:
+                self.destroy()
+            except: pass
 
     def save_role(self):
         nombre = self.entry_nombre.get().strip()

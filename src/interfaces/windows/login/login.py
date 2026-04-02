@@ -108,7 +108,7 @@ class LoginWindow(ctk.CTk):
             return
         usuario_encontrado = AuthService.verificar_credenciales(user, pw)
         if usuario_encontrado:
-            Alerts.show_success("Éxito", f"¡Bienvenido, {usuario_encontrado['nombre']}!", master=self)
+            Alerts.show_success("Éxito", f"¡Bienvenido, {usuario_encontrado['nombreUsuarios']}!", master=self)
             
             self.entry_user.delete(0, 'end')
             self.entry_password.delete(0, 'end')
