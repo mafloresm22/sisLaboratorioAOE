@@ -5,12 +5,14 @@ from interfaces.components.mensajes import Alerts
 class EditRoleModal(ctk.CTkToplevel):
     def __init__(self, master, role_data, parent_view=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.withdraw() # Ocultar inmediatamente para evitar el flash en (0,0)
         self.parent_view = parent_view
         self.id_rol = role_data.get('idRol')
         self.old_nombre = role_data.get('nombreRol')
         
         # --- CAPA DE OPACIDAD (OVERLAY) ---
         self.overlay = ctk.CTkToplevel(self.master)
+        self.overlay.withdraw() # Ocultar overlay inicial
         self.overlay.geometry(f"{self.overlay.winfo_screenwidth()}x{self.overlay.winfo_screenheight()}+0+0")
         self.overlay.overrideredirect(True)
         self.overlay.configure(fg_color="black")
@@ -33,6 +35,10 @@ class EditRoleModal(ctk.CTkToplevel):
         self.geometry(f"{self.width}x{self.height}+{self.target_x}+{int(self.current_y)}")
         self.configure(fg_color="white")
         self.attributes("-alpha", 1.0)
+        
+        # Mostrar ventanas ya configuradas
+        self.overlay.deiconify()
+        self.deiconify()
         
         # --- CONTENEDOR PRINCIPAL ---
         self.container = ctk.CTkFrame(self, fg_color="white", corner_radius=10, border_width=1, border_color="#e0e0e0")

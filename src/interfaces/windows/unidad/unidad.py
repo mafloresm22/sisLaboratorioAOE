@@ -1,28 +1,36 @@
 import customtkinter as ctk
 from PIL import Image
+import os
 from services.unidad.unidad import UnidadService
+from interfaces.windows.unidad.create_unidad import CreateUnidadModal
+from interfaces.windows.unidad.edit_unidad import EditUnidadModal
+from interfaces.windows.unidad.delete_unidad import DeleteUnidadModal
 
 class UnidadItem(ctk.CTkFrame):
     """Componente que representa un Círculo con Icono y Nombre debajo."""
-    def __init__(self, master, title, icon_text, bg_color, hover_color, on_edit=None, on_delete=None):
+    def __init__(self, master, title, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
         # Frame contenedor invisible
         super().__init__(master, fg_color="transparent")
         self.bg_color = bg_color
         self.hover_color = hover_color
         
-        # 1. El Círculo 
+        # 1. Forma de la Unidad
         self.circle_btn = ctk.CTkFrame(
-            self, width=160, height=160, corner_radius=80, 
+            self, width=140, height=140, corner_radius=70, 
             fg_color=bg_color, border_width=0
         )
         self.circle_btn.pack(pady=(0, 15))
         self.circle_btn.pack_propagate(False) 
         
-        # 2. El Icono dentro del círculo
-        self.lbl_icon = ctk.CTkLabel(
-            self.circle_btn, text=icon_text, font=("Segoe UI Emoji", 65),
-            text_color="white"
-        )
+        # 2. El Icono dentro del círculo (Usando CTkImage)
+        try:
+            pil_img = Image.open(icon_path)
+            ctk_img = ctk.CTkImage(light_image=pil_img, size=(65, 65))
+            self.lbl_icon = ctk.CTkLabel(self.circle_btn, image=ctk_img, text="")
+        except Exception:
+            # Fallback en caso de que no se encuentre el icono
+            self.lbl_icon = ctk.CTkLabel(self.circle_btn, text="📦", font=("Arial", 60))
+            
         self.lbl_icon.place(relx=0.5, rely=0.5, anchor="center")
         
         # 3. El Nombre debajo del círculo
@@ -38,14 +46,14 @@ class UnidadItem(ctk.CTkFrame):
             fg_color="#f39c12", hover_color="#e67e22", font=("Segoe UI Emoji", 22),
             command=on_edit, border_width=2, border_color="white"
         )
-        self.btn_edit.place(relx=0.85, rely=0.18, anchor="center")
+        self.btn_edit.place(relx=0.15, rely=0.18, anchor="center")
 
         self.btn_delete = ctk.CTkButton(
             self.circle_btn, text="🗑️", width=45, height=45, corner_radius=12,
             fg_color="#e74c3c", hover_color="#c0392b", font=("Segoe UI Emoji", 22),
             command=on_delete, border_width=2, border_color="white"
         )
-        self.btn_delete.place(relx=0.15, rely=0.18, anchor="center")
+        self.btn_delete.place(relx=0.85, rely=0.18, anchor="center")
 
         self.circle_btn.bind("<Enter>", self._on_enter)
         self.circle_btn.bind("<Leave>", self._on_leave)
@@ -73,7 +81,7 @@ class UnidadFrame(ctk.CTkFrame):
 
         # 1. CABECERA
         self.header = ctk.CTkFrame(self, fg_color="transparent")
-        self.header.grid(row=0, column=0, sticky="ew", padx=30, pady=(30, 20))
+        self.header.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 20))
         
         self.lbl_title = ctk.CTkLabel(
             self.header, text="Unidades de Medida", 
@@ -89,11 +97,7 @@ class UnidadFrame(ctk.CTkFrame):
         )
         self.btn_add.pack(side="right")
 
-        # 2. SEPARADOR
-        self.line = ctk.CTkFrame(self, fg_color="#f0f0f0", height=2)
-        self.line.grid(row=0, column=0, sticky="ew", padx=30, pady=(100, 0))
-
-        # 3. CONTENEDOR DE CÍRCULOS (Scrollable)
+        # 2. CONTENEDOR DE CÍRCULOS (Scrollable)
         self.scroll_container = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.scroll_container.grid(row=1, column=0, sticky="nsew", padx=20, pady=20)
         
@@ -110,14 +114,17 @@ class UnidadFrame(ctk.CTkFrame):
             
         unidades = UnidadService.get_all_unidades()
         
-        # Paleta de colores variada
+        # Paleta de colores variada y mapeo de iconos profesionales
+        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+        icons_dir = os.path.join(base_path, "assets", "icons", "unidad_img")
+        
         colors = [
-            ("#3498db", "#2980b9", "📏"), # Regla
-            ("#2ecc71", "#27ae60", "🧪"), # Tubo
-            ("#e67e22", "#d35400", "📦"), # Caja
-            ("#9b59b6", "#8e44ad", "📐"), # Escuadra
-            ("#34495e", "#2c3e50", "⚖️"), # Balanza
-            ("#1abc9c", "#16a085", "🌡️"), # Termómetro
+            ("#3498db", "#2980b9", os.path.join(icons_dir, "ruler_7927154.png")),
+            ("#2ecc71", "#27ae60", os.path.join(icons_dir, "5672649.png")),
+            ("#e67e22", "#d35400", os.path.join(icons_dir, "package_1274687.png")),
+            ("#9b59b6", "#8e44ad", os.path.join(icons_dir, "8892765.png")),
+            ("#34495e", "#2c3e50", os.path.join(icons_dir, "meter_3348866.png")),
+            ("#1abc9c", "#16a085", os.path.join(icons_dir, "3016800.png")),
         ]
 
         if not unidades:
@@ -140,13 +147,19 @@ class UnidadFrame(ctk.CTkFrame):
                 item = UnidadItem(
                     self.scroll_container,
                     title=unit["nombreUnidad"],
-                    icon_text=color_conf[2],
+                    icon_path=color_conf[2],
                     bg_color=color_conf[0],
                     hover_color=color_conf[1],
-                    on_edit=lambda u=unit: print(f"Editar: {u['nombreUnidad']}"),
-                    on_delete=lambda u=unit: print(f"Eliminar: {u['nombreUnidad']}")
+                    on_edit=lambda u=unit: self.on_edit_unit(u),
+                    on_delete=lambda u=unit: self.on_delete_unit(u)
                 )
                 item.grid(row=row, column=col, padx=20, pady=30, sticky="n")
 
     def on_add_unit(self):
-        print("Abrir Modal Unidad")
+        modal = CreateUnidadModal(self.winfo_toplevel(), parent_view=self)
+
+    def on_edit_unit(self, unit):
+        modal = EditUnidadModal(self.winfo_toplevel(), unit_data=unit, parent_view=self)
+
+    def on_delete_unit(self, unit):
+        modal = DeleteUnidadModal(self.winfo_toplevel(), unit_data=unit, parent_view=self)

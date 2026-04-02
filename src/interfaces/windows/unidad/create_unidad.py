@@ -1,13 +1,11 @@
 import customtkinter as ctk
-from PIL import Image
-import os
-from services.Roles.roles import RoleService
+from services.unidad.unidad import UnidadService
 from interfaces.components.mensajes import Alerts
 
-class CreateRoleModal(ctk.CTkToplevel):
+class CreateUnidadModal(ctk.CTkToplevel):
     def __init__(self, master, parent_view=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.withdraw() # Ocultar mientras se configura para evitar flash en (0,0)
+        self.withdraw()
         self.parent_view = parent_view
         
         # --- CAPA DE OPACIDAD (OVERLAY) ---
@@ -49,7 +47,7 @@ class CreateRoleModal(ctk.CTkToplevel):
         self.header.pack(fill="x", side="top")
         self.header.pack_propagate(False)
         
-        self.lbl_title = ctk.CTkLabel(self.header, text="Crear Nuevo Rol", font=("Arial", 18, "bold"), text_color="white")
+        self.lbl_title = ctk.CTkLabel(self.header, text="Nueva Unidad de Medida", font=("Arial", 18, "bold"), text_color="white")
         self.lbl_title.pack(side="left", padx=20)
         
         self.btn_close = ctk.CTkButton(
@@ -64,12 +62,12 @@ class CreateRoleModal(ctk.CTkToplevel):
         self.body = ctk.CTkFrame(self.container, fg_color="white")
         self.body.pack(fill="both", expand=True, padx=30, pady=20)
         
-        self.lbl_field = ctk.CTkLabel(self.body, text="Nombre del Rol", font=("Arial", 14, "bold"), text_color="#34495e")
+        self.lbl_field = ctk.CTkLabel(self.body, text="Nombre de la Unidad", font=("Arial", 14, "bold"), text_color="#34495e")
         self.lbl_field.pack(anchor="w", pady=(0, 5))
         
         self.entry_nombre = ctk.CTkEntry(
             self.body, 
-            placeholder_text="Ej: Administrador, Asistente, Docente...", 
+            placeholder_text="Ej: Kilogramos, Metros, Unidades...", 
             height=45, 
             corner_radius=8,
             font=("Arial", 14),
@@ -83,10 +81,10 @@ class CreateRoleModal(ctk.CTkToplevel):
         self.footer.pack_propagate(False)
         
         self.btn_aceptar = ctk.CTkButton(
-            self.footer, text="Aceptar", 
+            self.footer, text="Guardar", 
             fg_color="#186ccf", hover_color="#145cb3",
             width=100, height=35, corner_radius=8,
-            command=self.save_role
+            command=self.save_unidad
         )
         self.btn_aceptar.pack(side="right", padx=(0, 30), pady=12)
 
@@ -106,7 +104,6 @@ class CreateRoleModal(ctk.CTkToplevel):
     def animate_entry(self):
         """Animación de caída suave."""
         if self.current_y < self.target_y:
-            # Movimiento exponencial para que sea suave
             distancia = self.target_y - self.current_y
             if distancia > 1:
                 self.current_y += (distancia * 0.2) + 1
@@ -122,15 +119,10 @@ class CreateRoleModal(ctk.CTkToplevel):
 
     def animate_exit(self):
         try:
-            try:
-                alpha = float(self.attributes("-alpha"))
-                overlay_alpha = float(self.overlay.attributes("-alpha"))
-            except:
-                alpha = 1.0
-                overlay_alpha = 0.5
+            alpha = float(self.attributes("-alpha"))
+            overlay_alpha = float(self.overlay.attributes("-alpha"))
 
             if alpha > 0:
-                # Bajar la posición y reducir opacidad
                 self.current_y += 10
                 new_alpha = max(0, alpha - 0.1)
                 new_overlay_alpha = max(0, overlay_alpha - 0.05)
@@ -144,7 +136,6 @@ class CreateRoleModal(ctk.CTkToplevel):
                 self.overlay.destroy()
                 self.destroy()
         except Exception:
-            # Fallback de seguridad para cerrar sin errores
             try:
                 self.overlay.destroy()
             except: pass
@@ -152,22 +143,20 @@ class CreateRoleModal(ctk.CTkToplevel):
                 self.destroy()
             except: pass
 
-    def save_role(self):
+    def save_unidad(self):
         nombre = self.entry_nombre.get().strip()
         if not nombre:
-            Alerts.show_error("Campo requerido", "El nombre del rol es obligatorio.", master=self)
+            Alerts.show_error("Campo requerido", "El nombre de la unidad es obligatorio.", master=self)
             return
         
-        # Llamar al servicio para guardar en DB
-        resultado = RoleService.create_role(nombre)
+        resultado = UnidadService.create_unidad(nombre)
         
         if resultado == "exists":
-            Alerts.show_warning("Ya existe", f"El rol '{nombre}' ya se encuentra registrado.", master=self)
+            Alerts.show_warning("Ya existe", f"La unidad '{nombre}' ya se encuentra registrada.", master=self)
         elif resultado:
-            Alerts.show_success("Éxito", f"El rol '{nombre}' ha sido creado correctamente.", master=self)
+            Alerts.show_success("Éxito", f"La unidad '{nombre}' ha sido creada correctamente.", master=self)
             if self.parent_view:
-                self.parent_view.load_role_cards()
-                self.parent_view.load_statistics()
+                self.parent_view.load_unidades()
             self.close_modal()
         else:
-            Alerts.show_error("Error", "No se pudo crear el rol en la base de datos.", master=self)
+            Alerts.show_error("Error", "No se pudo crear la unidad en la base de datos.", master=self)

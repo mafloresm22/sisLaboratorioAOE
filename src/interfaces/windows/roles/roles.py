@@ -8,10 +8,9 @@ from services.Roles.roles import RoleService
 
 class SmallBox(ctk.CTkFrame):
     """Tarjeta de Rol estilizada (versión compacta con acciones)."""
-    def __init__(self, master, title, icon_text, bg_color, hover_color, on_edit=None, on_delete=None):
-        # Aumentamos la altura para que no se vea apretado
+    def __init__(self, master, title, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
         super().__init__(master, fg_color=bg_color, corner_radius=15, height=140)
-        self.pack_propagate(False) # Evitar que el contenido cambie el tamaño
+        self.pack_propagate(False)
         
         # --- Contenido superior ---
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -49,8 +48,14 @@ class SmallBox(ctk.CTkFrame):
         )
         self.btn_edit.pack(side="right", padx=5)
 
-        self.lbl_icon = ctk.CTkLabel(self, text=icon_text, font=("Segoe UI Emoji", 80), text_color="#ffffff")
-        self.lbl_icon.place(relx=0.92, rely=0.28, anchor="center")
+        try:
+            pil_img = Image.open(icon_path)
+            ctk_img = ctk.CTkImage(light_image=pil_img, size=(70, 70))
+            self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
+        except Exception:
+            self.lbl_icon = ctk.CTkLabel(self, font=("Segoe UI Emoji", 80), text_color="#ffffff")
+            
+        self.lbl_icon.place(relx=0.88, rely=0.35, anchor="center")
 
 class RolesFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -125,19 +130,15 @@ class RolesFrame(ctk.CTkFrame):
         self.load_statistics()
 
     def on_add_role(self):
-        # Abrir el modal de creación pasándole una referencia a sí mismo para refrescar
         modal = CreateRoleModal(self.winfo_toplevel(), parent_view=self)
 
     def on_edit_role(self, role):
-        # Abrir el modal de edición
         modal = EditRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
 
     def on_delete_role(self, role):
-        # Abrir el modal de confirmación de eliminación (estilo Swal)
         modal = DeleteRoleModal(self.winfo_toplevel(), role_data=role, parent_view=self)
 
     def load_role_cards(self):
-        # Limpiar el contenedor (por si se llama para refrescar)
         for child in self.cards_scroll.winfo_children():
             child.destroy()
             
@@ -176,13 +177,16 @@ class RolesFrame(ctk.CTkFrame):
             lbl_hint.pack()
         else:
             # Si hay roles, los mostramos como SmallBox
+            # Paleta de colores y mapeo de iconos profesionales
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+            icons_dir = os.path.join(base_dir, "assets", "icons", "roles_img")
+            
             colors = [
-                ("#17a2b8", "#138496", "🛡"), # Info
-                ("#28a745", "#218838", "⚙"), # Success
-                ("#ffc107", "#e0a800", "👤"), # Warning
-                ("#dc3545", "#c82333", "👁"), # Danger
-                ("#6f42c1", "#59359a", "🔧"), # Purple
-                ("#007bff", "#0069d9", "🚶")  # Primary
+                ("#17a2b8", "#138496", os.path.join(icons_dir, "13808994.png")), 
+                ("#28a745", "#218838", os.path.join(icons_dir, "2770460.png")),
+                ("#ffc107", "#e0a800", os.path.join(icons_dir, "3471381.png")),
+                ("#dc3545", "#c82333", os.path.join(icons_dir, "5403817.png")),
+                ("#6f42c1", "#59359a", os.path.join(icons_dir, "13030278.png"))
             ]
             
             for i, role in enumerate(roles):
@@ -194,7 +198,7 @@ class RolesFrame(ctk.CTkFrame):
                 card = SmallBox(
                     self.cards_scroll,
                     title=role["nombreRol"],
-                    icon_text=color_config[2],
+                    icon_path=color_config[2],
                     bg_color=color_config[0],
                     hover_color=color_config[1],
                     on_edit=lambda r=role: self.on_edit_role(r),

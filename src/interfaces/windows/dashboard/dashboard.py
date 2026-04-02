@@ -6,14 +6,19 @@ from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
 
 class ModuleCard(ctk.CTkFrame):
-    def __init__(self, master, title, icon, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
+    def __init__(self, master, title, icon_path, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
         super().__init__(master, fg_color=bg_color, border_width=1, border_color="#e0e0e0", corner_radius=15, cursor="hand2")
         self.command = command
         self.accent_color = color
         self.base_bg = bg_color
         
-        # Icono (con ajuste de padding si es necesario)
-        self.lbl_icon = ctk.CTkLabel(self, text=icon, font=("Arial", 48))
+        try:
+            pil_img = Image.open(icon_path)
+            ctk_img = ctk.CTkImage(light_image=pil_img, size=(60, 60))
+            self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
+        except Exception:
+            self.lbl_icon = ctk.CTkLabel(self, text="📦", font=("Arial", 48))
+            
         self.lbl_icon.pack(pady=(25, 5), padx=(extra_padx, 0))
         
         # Titulo
@@ -46,7 +51,6 @@ class DashboardWindow(ctk.CTkToplevel):
         super().__init__(master)
         self.views = {} # Inicializar temprano para evitar AttributeError en callbacks
         
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         # Para probar el inicio de sesion del usuario de acuerdo al esquema DB
         self.usuario = usuario if usuario else {"nombreUsuarios": "Administrador", "rolId": 1, "nombreRol": "Administrador"}
         
@@ -101,19 +105,33 @@ class DashboardWindow(ctk.CTkToplevel):
         
         # DEFINICIÓN DE MENÚS Y SUBMENÚS CON ICONOS
         self.menu_items = {
-            "Módulos 📦": ["Roles 👥", "Unidad 📏", "Laboratorios 🧪", "E.Conservación 🛠️"],
-            "Usuarios 👥": None,
-            "Inventario 🛒": None,
-            "Préstamos 📋": None,
-            "Reportes 📈": None
+            "Módulos": ["Roles", "Unidad", "Laboratorios", "E.Conservación"],
+            "Usuarios": None,
+            "Inventario": None,
+            "Préstamos": None,
+            "Reportes": None
+        }
+        
+        # Mapeo de iconos para la Navbar
+        icons_dir = os.path.join(base_dir, "assets", "icons", "dashboard")
+        self.menu_icons = {
+            "Módulos": os.path.join(icons_dir, "13051347_roles.png"),
+            "Usuarios": os.path.join(icons_dir, "7816987_usuario.png"),
+            "Inventario": os.path.join(icons_dir, "11458663_inventario.png"),
+            "Préstamos": os.path.join(icons_dir, "772938_prestamo.png"),
+            "Reportes": os.path.join(icons_dir, "8916436_Reportes.png")
         }
         
         self.nav_buttons = {}
         for item, sub_items in self.menu_items.items():
-            clean_name = item.split()[0] # Nombre sin el emoji
-            
+            # Intentar cargar icono para el botón
+            try:
+                path = self.menu_icons.get(item)
+                icon_img = ctk.CTkImage(light_image=Image.open(path), size=(20, 20)) if path else None
+            except:
+                icon_img = None
+                
             if sub_items:
-                # OptionMenu con mucho REDONDEO y Ancho Fijo para evitar deformación
                 btn = ctk.CTkOptionMenu(
                     self.menu_frame, 
                     values=[item] + sub_items,
@@ -123,20 +141,20 @@ class DashboardWindow(ctk.CTkToplevel):
                     dropdown_hover_color="#0d47a1", dropdown_text_color="white",
                     dropdown_font=("Arial", 13, "bold"),
                     font=("Arial", 14, "bold"),
-                    command=lambda val: self.handle_nav_click(val)
+                    command=lambda val, name=item: self.handle_nav_click(val, name)
                 )
                 btn.set(item)
             else:
                 btn = ctk.CTkButton(
-                    self.menu_frame, text=item, 
-                    width=130, height=45, corner_radius=22,
+                    self.menu_frame, text=f" {item}", image=icon_img, compound="left",
+                    width=135, height=45, corner_radius=22,
                     fg_color="transparent", hover_color="#145cb3", text_color="white",
                     font=("Arial", 14, "bold"),
-                    command=lambda name=clean_name: self.switch_view(name)
+                    command=lambda name=item: self.switch_view(name)
                 )
             
             btn.pack(side="left", padx=8)
-            self.nav_buttons[clean_name] = btn
+            self.nav_buttons[item] = btn
 
         # --- PERFIL Y LOGOUT ---
         self.profile_frame = ctk.CTkFrame(self.navbar, fg_color="transparent")
@@ -219,22 +237,24 @@ class DashboardWindow(ctk.CTkToplevel):
         cards_container = ctk.CTkFrame(mod_frame, fg_color="transparent")
         cards_container.pack(pady=20, padx=40, fill="both", expand=True)
         
-        # Crear 4 tarjetas profesionales con fondos pasteles
+        # Crear 4 tarjetas profesionales con iconos profesionales
+        icons_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")), "assets", "icons", "dashboard")
+        
         module_submenus = {
-            "Roles": ("👥", "Gestión de permisos", "#1976d2", "#e3f2fd"), 
-            "Unidad": ("📏", "Unidades de medida", "#2e7d32", "#e8f5e9"),
-            "Laboratorios": ("🧪", "Sedes y laboratorios", "#7b1fa2", "#f3e5f5"),
-            "E.Conservación": ("🛠️", "Estados de equipos", "#ef6c00", "#fff3e0")
+            "Roles": (os.path.join(icons_dir, "13051347_roles.png"), "Gestión de permisos", "#1976d2", "#e3f2fd"), 
+            "Unidad": (os.path.join(icons_dir, "8289236_unidad.png"), "Unidades de medida", "#2e7d32", "#e8f5e9"),
+            "Laboratorios": (os.path.join(icons_dir, "7918318_laboratorio.png"), "Sedes y laboratorios", "#7b1fa2", "#f3e5f5"),
+            "E.Conservación": (os.path.join(icons_dir, "13500912_estadoConservacion.png"), "Estados de equipos", "#ef6c00", "#fff3e0")
         }
         
         for i, (mod_name, data) in enumerate(module_submenus.items()):
-            icon, desc_text, color, bg_c = data
+            icon_path, desc_text, color, bg_c = data
             extra_px = 25 if mod_name == "E.Conservación" else 0
             
             card = ModuleCard(
                 cards_container, 
                 title=mod_name, 
-                icon=icon, 
+                icon_path=icon_path, 
                 description=desc_text,
                 color=color,
                 bg_color=bg_c,
@@ -277,10 +297,12 @@ class DashboardWindow(ctk.CTkToplevel):
         ctk.CTkLabel(rep_frame, text="Analíticas y Reportes", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
         self.views["Reportes"] = rep_frame
 
-    def handle_nav_click(self, val):
+    def handle_nav_click(self, val, parent_name):
         """Maneja el click en un OptionMenu"""
-        clean_val = val.split()[0]
-        self.switch_view(clean_val)
+        if val == parent_name:
+            self.switch_view(val)
+        else:
+            self.switch_view(val)
 
     def switch_view(self, view_name):
         """Cambia el contenido de la pantalla y resalta el botón activo en la Navbar."""
@@ -297,21 +319,16 @@ class DashboardWindow(ctk.CTkToplevel):
                 btn.configure(fg_color="transparent")
             elif isinstance(btn, ctk.CTkOptionMenu):
                 btn.configure(fg_color="#145cb3")
-                # Si estamos navegando a un submenú, el OptionMenu debe reflejarlo
-                # Buscamos si el view_name es parte de los submenús de este botón
-                for item_with_emoji, sub_list in self.menu_items.items():
-                    if item_with_emoji.startswith(base_name) and sub_list:
-                        sub_names = [s.split()[0] for s in sub_list]
-                        if view_name in sub_names:
-                            # Encontrar el string original
-                            correct_str = next(s for s in sub_list if s.startswith(view_name))
-                            btn.set(correct_str)
+                for item_name, sub_list in self.menu_items.items():
+                    if item_name == base_name and sub_list:
+                        if view_name in sub_list:
+                            btn.set(view_name)
                             btn.configure(fg_color="#0d47a1")
                         elif view_name == base_name:
-                            btn.set(item_with_emoji)
+                            btn.set(item_name)
                             btn.configure(fg_color="#0d47a1")
                         else:
-                            btn.set(item_with_emoji)
+                            btn.set(item_name)
 
         # Mostrar la vista elegida
         self.views[view_name].pack(fill="both", expand=True)
