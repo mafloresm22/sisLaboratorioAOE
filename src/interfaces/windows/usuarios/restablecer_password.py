@@ -1,24 +1,16 @@
 import customtkinter as ctk
 from services.usuarios.usuarios import UsuarioService
-from services.Roles.roles import RoleService
 from interfaces.components.mensajes import Alerts
 
-class EditUsuarioModal(ctk.CTkToplevel):
+class RestablecerPasswordModal(ctk.CTkToplevel):
     def __init__(self, master, user_data, parent_view=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.withdraw()
+        self.withdraw() 
         self.parent_view = parent_view
         
-        # Datos iniciales del usuario
+        # Datos iniciales
         self.user_id = user_data.idUsuarios
-        self.old_nombre = user_data.nombreUsuarios
-        self.old_rol_id = user_data.rolId
-        self.old_rol_nombre = user_data.nombreRol
-        
-        # Cargar roles para el combo
-        self.roles = RoleService.get_all_roles()
-        self.roles_map = {r.nombreRol: r.idRol for r in self.roles}
-        self.role_options = list(self.roles_map.keys()) if self.roles_map else ["Sin Roles Disponibles"]
+        self.username = user_data.nombreUsuarios
         
         # --- CAPA DE OPACIDAD (OVERLAY) ---
         self.overlay = ctk.CTkToplevel(self.master)
@@ -30,8 +22,8 @@ class EditUsuarioModal(ctk.CTkToplevel):
         
         # --- MODAL CONFIG ---
         self.overrideredirect(True)
-        self.width = 500
-        self.height = 350
+        self.width = 450
+        self.height = 320
         
         # Centrar el modal en pantalla
         self.update_idletasks()
@@ -40,6 +32,7 @@ class EditUsuarioModal(ctk.CTkToplevel):
         self.target_x = ((screen_width // 2) - (self.width // 2)) + 150
         self.target_y = (screen_height // 2) - (self.height // 2)
         
+        # Parámetros para la animación
         self.current_y = self.target_y - 80 
         self.geometry(f"{self.width}x{self.height}+{self.target_x}+{int(self.current_y)}")
         self.configure(fg_color="white")
@@ -48,22 +41,22 @@ class EditUsuarioModal(ctk.CTkToplevel):
         self.overlay.deiconify()
         self.deiconify()
         
-        # --- CONTENEDOR ---
+        # --- CONTENEDOR PRINCIPAL ---
         self.container = ctk.CTkFrame(self, fg_color="white", corner_radius=10, border_width=1, border_color="#e0e0e0")
         self.container.pack(fill="both", expand=True)
         
-        # 1. HEADER (Color Ámbar/Naranja para Edición)
-        self.header = ctk.CTkFrame(self.container, fg_color="#f39c12", height=50, corner_radius=10)
+        # 1. HEADER (Color Rojo Pastel: #ff6b6b)
+        self.header = ctk.CTkFrame(self.container, fg_color="#ff6b6b", height=50, corner_radius=10)
         self.header.pack(fill="x", side="top")
         self.header.pack_propagate(False)
         
-        self.lbl_title = ctk.CTkLabel(self.header, text="Editar Usuario", font=("Arial", 18, "bold"), text_color="white")
+        self.lbl_title = ctk.CTkLabel(self.header, text="Restablecer Contraseña", font=("Arial", 18, "bold"), text_color="white")
         self.lbl_title.pack(side="left", padx=20)
         
         self.btn_close = ctk.CTkButton(
             self.header, text="×", width=30, height=30, 
             fg_color="transparent", text_color="white", 
-            hover_color="#e74c3c", font=("Arial", 24),
+            hover_color="#ee5253", font=("Arial", 24),
             command=self.close_modal
         )
         self.btn_close.pack(side="right", padx=10)
@@ -72,33 +65,25 @@ class EditUsuarioModal(ctk.CTkToplevel):
         self.body = ctk.CTkFrame(self.container, fg_color="white")
         self.body.pack(fill="both", expand=True, padx=40, pady=(20, 5))
         
-        # Campo: Nombre
-        self.lbl_nombre = ctk.CTkLabel(self.body, text="Nombre de Usuario", font=("Arial", 14, "bold"), text_color="#34495e")
-        self.lbl_nombre.pack(anchor="w", pady=(0, 5))
-        self.entry_nombre = ctk.CTkEntry(
-            self.body, height=45, corner_radius=8, font=("Arial", 14), border_width=2
+        # Información del usuario
+        self.lbl_info = ctk.CTkLabel(
+            self.body, 
+            text=f"Ingresa la nueva contraseña para:\n'{self.username}'", 
+            font=("Arial", 13), 
+            text_color="#7f8c8d",
+            justify="center"
         )
-        self.entry_nombre.pack(fill="x", pady=(0, 15))
-        self.entry_nombre.insert(0, self.old_nombre)
+        self.lbl_info.pack(pady=(0, 15))
         
-        # Campo: Rol
-        self.lbl_rol = ctk.CTkLabel(self.body, text="Rol del Usuario", font=("Arial", 14, "bold"), text_color="#34495e")
-        self.lbl_rol.pack(anchor="w", pady=(0, 5))
-        
-        # Validar si el rol actual existe en las opciones, si no usar el de por defecto
-        current_role_val = self.old_rol_nombre if self.old_rol_nombre in self.role_options else self.role_options[0]
-        self.role_var = ctk.StringVar(value=current_role_val)
-        
-        self.menu_rol = ctk.CTkComboBox(
-            self.body, values=self.role_options, variable=self.role_var,
-            height=45, corner_radius=8, font=("Arial", 14), border_width=2,
-            fg_color="white", border_color="#d0d0d0", 
-            button_color="#186ccf", button_hover_color="#145cb3",
-            dropdown_fg_color="white", dropdown_text_color="#2c3e50",
-            dropdown_hover_color="#f0f0f0", dropdown_font=("Arial", 14),
-            state="readonly"
+        # Campo: Nueva Contraseña
+        self.lbl_pass = ctk.CTkLabel(self.body, text="Nueva Contraseña", font=("Arial", 14, "bold"), text_color="#34495e")
+        self.lbl_pass.pack(anchor="w", pady=(0, 5))
+        self.entry_pass = ctk.CTkEntry(
+            self.body, placeholder_text="Escribe aquí...", show="*",
+            height=45, corner_radius=8, font=("Arial", 14), border_width=2
         )
-        self.menu_rol.pack(fill="x")
+        self.entry_pass.pack(fill="x")
+        self.entry_pass.focus()
         
         # 3. FOOTER
         self.footer = ctk.CTkFrame(self.container, fg_color="#f8f9fa", height=55, corner_radius=10)
@@ -106,17 +91,17 @@ class EditUsuarioModal(ctk.CTkToplevel):
         self.footer.pack_propagate(False)
         
         self.btn_aceptar = ctk.CTkButton(
-            self.footer, text="Actualizar", 
-            fg_color="#f39c12", hover_color="#e67e22",
-            width=110, height=35, corner_radius=8,
-            command=self.update_usuario
+            self.footer, text="Cambiar", 
+            fg_color="#186ccf", hover_color="#186ccf",
+            width=100, height=35, corner_radius=8,
+            command=self.save_password
         )
         self.btn_aceptar.pack(side="right", padx=(0, 30), pady=(5, 10))
 
         self.btn_cancelar = ctk.CTkButton(
             self.footer, text="Cancelar", 
             fg_color="#F25838", hover_color="#F25838",
-            width=100, height=35, corner_radius=8,
+            width=90, height=35, corner_radius=8,
             command=self.close_modal
         )
         self.btn_cancelar.pack(side="right", padx=10, pady=(5, 10))
@@ -157,30 +142,19 @@ class EditUsuarioModal(ctk.CTkToplevel):
             try: self.destroy()
             except: pass
 
-    def update_usuario(self):
-        nuevo_nombre = self.entry_nombre.get().strip()
-        nuevo_rol_nombre = self.role_var.get()
+    def save_password(self):
+        nuevo_pass = self.entry_pass.get().strip()
         
-        if not nuevo_nombre:
-            Alerts.show_error("Campo requerido", "El nombre de usuario no puede estar vacío.", master=self)
+        if not nuevo_pass:
+            Alerts.show_error("Campo requerido", "Debes ingresar una nueva contraseña.", master=self)
             return
             
-        nuevo_rol_id = self.roles_map.get(nuevo_rol_nombre)
-        
-        # Verificar si hubo cambios
-        if nuevo_nombre == self.old_nombre and nuevo_rol_id == self.old_rol_id:
-            self.close_modal()
+        if len(nuevo_pass) < 4:
+            Alerts.show_warning("Contraseña muy corta", "La contraseña debe tener al menos 4 caracteres.", master=self)
             return
 
-        resultado = UsuarioService.update_usuario(self.user_id, nuevo_nombre, nuevo_rol_id)
-        
-        if resultado == "exists":
-            Alerts.show_warning("Ya existe", f"El nombre '{nuevo_nombre}' ya está siendo usado por otro usuario.", master=self)
-        elif resultado:
-            Alerts.show_success("Éxito", "Usuario actualizado correctamente.", master=self)
-            if self.parent_view:
-                self.parent_view.load_user_cards()
-                self.parent_view.load_statistics()
+        if UsuarioService.reset_password(self.user_id, nuevo_pass):
+            Alerts.show_success("¡Éxito!", f"La contraseña de '{self.username}' ha sido actualizada.", master=self)
             self.close_modal()
         else:
-            Alerts.show_error("Error", "No se pudo actualizar el usuario.", master=self)
+            Alerts.show_error("Error", "No se pudo actualizar la contraseña.", master=self)

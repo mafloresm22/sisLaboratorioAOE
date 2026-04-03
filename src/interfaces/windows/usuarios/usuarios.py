@@ -2,16 +2,24 @@ import customtkinter as ctk
 from PIL import Image
 import os
 from services.usuarios.usuarios import UsuarioService
-# from interfaces.windows.usuarios.create_usuarios import CreateUsuarioModal
-# from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
-# from interfaces.windows.usuarios.delete_usuarios import DeleteUsuarioModal
+from interfaces.windows.usuarios.create_usuarios import CreateUsuarioModal
+from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
+from interfaces.windows.usuarios.restablecer_password import RestablecerPasswordModal
 
 class UserBox(ctk.CTkFrame):
-    """Tarjeta de Usuario estilizada."""
-    def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
+    def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
+        is_admin = role_name.lower() == "administrador"
+        
+        if is_admin:
+            bg_color = "#2482e0" 
+            hover_color = "#54a2f0"
+            
         super().__init__(master, fg_color=bg_color, corner_radius=15, height=140)
         self.pack_propagate(False)
         
+        if is_admin:
+            self.configure(border_width=3, border_color="#00d2ff")    
+
         # --- Contenido superior ---
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.header_frame.pack(fill="x", padx=15, pady=(15, 0))
@@ -20,13 +28,26 @@ class UserBox(ctk.CTkFrame):
         self.lbl_user = ctk.CTkLabel(self.header_frame, text=username, font=("Arial", 19, "bold"), text_color="white")
         self.lbl_user.pack(anchor="w")
         
-        # Rol debajo (Más grande y resaltado si es Admin)
+        # Rol
         is_admin = role_name.lower() == "administrador"
-        role_display = f"🛡️ {role_name}" if is_admin else role_name
         role_font = ("Arial", 15, "bold") if is_admin else ("Arial", 14)
         role_color = "#ffffff" if is_admin else "#e0e0e0"
 
-        self.lbl_role = ctk.CTkLabel(self.header_frame, text=role_display, font=role_font, text_color=role_color)
+        admin_img = None
+        if is_admin:
+            try:
+                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+                admin_icon_path = os.path.join(base_dir, "assets", "icons", "roles_img", "13808994.png")
+                pil_admin = Image.open(admin_icon_path)
+                admin_img = ctk.CTkImage(light_image=pil_admin, size=(20, 20))
+            except Exception:
+                pass
+
+        if admin_img:
+            self.lbl_role = ctk.CTkLabel(self.header_frame, text=f" {role_name}", image=admin_img, compound="left", font=role_font, text_color=role_color)
+        else:
+            self.lbl_role = ctk.CTkLabel(self.header_frame, text=role_name, font=role_font, text_color=role_color)
+
         self.lbl_role.pack(anchor="w", pady=(2, 0))
         
         # --- Footer con Botones de Acción ---
@@ -56,6 +77,16 @@ class UserBox(ctk.CTkFrame):
             border_width=0
         )
         self.btn_edit.pack(side="right", padx=5)
+
+        # Botón Restablecer password
+        self.btn_reset = ctk.CTkButton(
+            self.btn_container, text="🔄", width=38, height=38, corner_radius=19,
+            fg_color="#1abc9c", text_color="white", hover_color="#16a085",
+            font=("Segoe UI Emoji", 15),
+            command=on_reset,
+            border_width=0
+        )
+        self.btn_reset.pack(side="right", padx=5)
 
         try:
             pil_img = Image.open(icon_path)
@@ -133,16 +164,17 @@ class UsuariosFrame(ctk.CTkFrame):
         self.load_statistics()
 
     def on_add_user(self):
-        print("Abrir Modal Agregar Usuario")
-        # modal = CreateUsuarioModal(self.winfo_toplevel(), parent_view=self)
+        modal = CreateUsuarioModal(self.winfo_toplevel(), parent_view=self)
 
     def on_edit_user(self, user):
-        print(f"Editar Usuario: {user['nombreUsuarios']}")
-        # modal = EditUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
+        modal = EditUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
     def on_delete_user(self, user):
-        print(f"Eliminar Usuario: {user['nombreUsuarios']}")
+        print(f"Eliminar Usuario: {user.nombreUsuarios}")
         # modal = DeleteUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
+
+    def on_reset_user(self, user):
+        modal = RestablecerPasswordModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
     def load_user_cards(self):
         for child in self.cards_scroll.winfo_children():
@@ -177,13 +209,14 @@ class UsuariosFrame(ctk.CTkFrame):
                 
                 card = UserBox(
                     self.cards_scroll,
-                    username=user["nombreUsuarios"],
-                    role_name=user["nombreRol"],
+                    username=user.nombreUsuarios,
+                    role_name=user.nombreRol,
                     icon_path=user_icon_path,
                     bg_color=colors[0],
                     hover_color=colors[1],
                     on_edit=lambda u=user: self.on_edit_user(u),
-                    on_delete=lambda u=user: self.on_delete_user(u)
+                    on_delete=lambda u=user: self.on_delete_user(u),
+                    on_reset=lambda u=user: self.on_reset_user(u)
                 )
                 card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 

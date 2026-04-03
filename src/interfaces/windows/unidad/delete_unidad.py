@@ -7,8 +7,8 @@ class DeleteUnidadModal(ctk.CTkToplevel):
         super().__init__(master, **kwargs)
         self.withdraw() # Ocultar mientras se configura
         self.parent_view = parent_view
-        self.id_unidad = unit_data.get('idUnidad')
-        self.nombre_unidad = unit_data.get('nombreUnidad')
+        self.id_unidad = unit_data.idUnidad
+        self.nombre_unidad = unit_data.nombreUnidad
         
         # --- CAPA DE OPACIDAD ---
         self.overlay = ctk.CTkToplevel(self.master)

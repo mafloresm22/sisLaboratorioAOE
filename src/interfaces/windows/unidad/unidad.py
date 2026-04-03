@@ -146,7 +146,7 @@ class UnidadFrame(ctk.CTkFrame):
                 
                 item = UnidadItem(
                     self.scroll_container,
-                    title=unit["nombreUnidad"],
+                    title=unit.nombreUnidad,
                     icon_path=color_conf[2],
                     bg_color=color_conf[0],
                     hover_color=color_conf[1],

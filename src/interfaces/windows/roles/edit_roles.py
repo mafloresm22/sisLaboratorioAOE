@@ -5,10 +5,10 @@ from interfaces.components.mensajes import Alerts
 class EditRoleModal(ctk.CTkToplevel):
     def __init__(self, master, role_data, parent_view=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.withdraw() # Ocultar inmediatamente para evitar el flash en (0,0)
+        self.withdraw() 
         self.parent_view = parent_view
-        self.id_rol = role_data.get('idRol')
-        self.old_nombre = role_data.get('nombreRol')
+        self.id_rol = role_data.idRol
+        self.old_nombre = role_data.nombreRol
         
         # --- CAPA DE OPACIDAD (OVERLAY) ---
         self.overlay = ctk.CTkToplevel(self.master)

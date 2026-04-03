@@ -1,4 +1,5 @@
 from database.connection import DatabaseConnection
+from models import Role
 
 class RoleService:
     @staticmethod
@@ -15,7 +16,7 @@ class RoleService:
                 ORDER BY R.idRol ASC
             """
             cursor.execute(query)
-            return [{"idRol": r[0], "nombreRol": r[1], "users": r[2]} for r in cursor.fetchall()]
+            return [Role(idRol=r[0], nombreRol=r[1], users=r[2]) for r in cursor.fetchall()]
         except Exception as e:
             print(f"🔴 Error SQL: {e}")
             return []

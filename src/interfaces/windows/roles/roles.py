@@ -197,7 +197,7 @@ class RolesFrame(ctk.CTkFrame):
                 
                 card = SmallBox(
                     self.cards_scroll,
-                    title=role["nombreRol"],
+                    title=role.nombreRol,
                     icon_path=color_config[2],
                     bg_color=color_config[0],
                     hover_color=color_config[1],

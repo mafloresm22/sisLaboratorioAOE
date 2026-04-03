@@ -7,8 +7,8 @@ class DeleteRoleModal(ctk.CTkToplevel):
         super().__init__(master, **kwargs)
         self.withdraw() # Ocultar mientras se configura
         self.parent_view = parent_view
-        self.role_id = role_data.get('idRol')
-        self.role_name = role_data.get('nombreRol')
+        self.role_id = role_data.idRol
+        self.role_name = role_data.nombreRol
 
         # --- CAPA DE OPACIDAD ---
         self.overlay = ctk.CTkToplevel(self.master)

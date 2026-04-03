@@ -1,4 +1,5 @@
 from database.connection import DatabaseConnection
+from models import Unidad
 
 class UnidadService:
     @staticmethod
@@ -15,7 +16,7 @@ class UnidadService:
                 ORDER BY idUnidad ASC
             """
             cursor.execute(query)
-            return [{"idUnidad": u[0], "nombreUnidad": u[1]} for u in cursor.fetchall()]
+            return [Unidad(idUnidad=u[0], nombreUnidad=u[1]) for u in cursor.fetchall()]
         except Exception as e:
             print(f"🔴 Error SQL (get_all_unidades): {e}")
             return []
