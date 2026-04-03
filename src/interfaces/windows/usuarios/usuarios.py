@@ -5,6 +5,7 @@ from services.usuarios.usuarios import UsuarioService
 from interfaces.windows.usuarios.create_usuarios import CreateUsuarioModal
 from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
 from interfaces.windows.usuarios.restablecer_password import RestablecerPasswordModal
+from interfaces.windows.usuarios.delete_usuarios import DeleteUsuarioModal
 
 class UserBox(ctk.CTkFrame):
     def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
@@ -170,8 +171,7 @@ class UsuariosFrame(ctk.CTkFrame):
         modal = EditUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
     def on_delete_user(self, user):
-        print(f"Eliminar Usuario: {user.nombreUsuarios}")
-        # modal = DeleteUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
+        modal = DeleteUsuarioModal(self.winfo_toplevel(), user_data=user, parent_view=self)
 
     def on_reset_user(self, user):
         modal = RestablecerPasswordModal(self.winfo_toplevel(), user_data=user, parent_view=self)

@@ -124,3 +124,22 @@ class UsuarioService:
             return False
         finally:
             if conn: conn.close()
+
+    @staticmethod
+    def delete_usuario(id_usuario):
+        conn = DatabaseConnection.get_connection()
+        if not conn: return False
+        try:
+            cursor = conn.cursor()
+            query = "DELETE FROM Usuarios WHERE idUsuarios = %s"
+            cursor.execute(query, (id_usuario,))
+            conn.commit()
+            return True
+        except Exception as e:
+            # Si hay error de llave foránea (e.g. tiene préstamos o bitácora)
+            if "foreign key constraint" in str(e).lower():
+                return "has_dependencies"
+            print(f"🔴 Error SQL (delete_usuario): {e}")
+            return False
+        finally:
+            if conn: conn.close()

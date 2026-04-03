@@ -5,6 +5,7 @@ import os
 from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
 from interfaces.windows.usuarios.usuarios import UsuariosFrame
+from interfaces.windows.laboratorios.laboratorios import LaboratoriosFrame
 
 class ModuleCard(ctk.CTkFrame):
     def __init__(self, master, title, icon_path, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
@@ -273,6 +274,8 @@ class DashboardWindow(ctk.CTkToplevel):
                 frame = RolesFrame(self.main_content)
             elif mod_name == "Unidad":
                 frame = UnidadFrame(self.main_content)
+            elif mod_name == "Laboratorios":
+                frame = LaboratoriosFrame(self.main_content)
             else:
                 frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
                 ctk.CTkLabel(frame, text=f"Administración de {mod_name}", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
