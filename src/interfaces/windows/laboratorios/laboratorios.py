@@ -2,6 +2,9 @@ import customtkinter as ctk
 from PIL import Image
 import os
 from services.laboratorios.laboratorios import LaboratorioService
+from interfaces.windows.laboratorios.create_lab import CreateLaboratorioModal
+from interfaces.windows.laboratorios.edit_lab import EditLaboratorioModal
+from interfaces.windows.laboratorios.delete_lab import DeleteLaboratorioModal
 
 class LaboratorioStatCard(ctk.CTkFrame):
     def __init__(self, master, title, count, color, **kwargs):
@@ -9,8 +12,16 @@ class LaboratorioStatCard(ctk.CTkFrame):
         
         self.grid_columnconfigure(1, weight=1)
         
-        # Icono decorativo
-        self.icon_lbl = ctk.CTkLabel(self, text="🧪", font=("Arial", 24))
+        # Icono
+        try:
+            icon_path = os.path.join(os.getcwd(), "assets", "icons", "estadisticas", "test-tube_3081698.png")
+            img = Image.open(icon_path)
+            self.icon_image = ctk.CTkImage(light_image=img, dark_image=img, size=(30, 30))
+            self.icon_lbl = ctk.CTkLabel(self, text="", image=self.icon_image)
+        except Exception as e:
+            print(f"⚠️ No se pudo cargar el icono: {e}")
+            self.icon_lbl = ctk.CTkLabel(self, text="🧪", font=("Arial", 24))
+            
         self.icon_lbl.grid(row=0, column=0, padx=15, pady=15)
         
         # Textos
@@ -66,11 +77,12 @@ class LaboratoriosFrame(ctk.CTkFrame):
         self.table_header.pack(fill="x", pady=(0, 10))
         self.table_header.pack_propagate(False)
 
-        # Configuración de columnas (NRO, NOMBRE, ESTADO, ACCIONES)
+        # Configuración de columnas (NRO, NOMBRE, PISO, ESTADO, ACCIONES)
         headers = [
             ("NRO", 0.05), 
             ("NOMBRE DEL LABORATORIO", 0.15), 
-            ("ESTADO", 0.55), 
+            ("UBICACIÓN / PISO", 0.40),
+            ("ESTADO", 0.65), 
             ("ACCIONES", 0.85)
         ]
         
@@ -136,14 +148,17 @@ class LaboratoriosFrame(ctk.CTkFrame):
             
             ctk.CTkLabel(row, text=lab.nombreLaboratorios, font=("Arial", 14, "bold"), text_color="#2c3e50").place(relx=0.15, rely=0.5, anchor="w")
 
+            # PISO
+            ctk.CTkLabel(row, text=lab.pisoLaboratorios, font=("Arial", 13), text_color="#7f8c8d").place(relx=0.40, rely=0.5, anchor="w")
+
             # ESTADO
-            estado = lab.estadoLaboratorios.lower()
-            is_disponible = "disponible" in estado
-            color_text = "#27ae60" if is_disponible else "#e74c3c"
-            color_bg = "#e8f5e9" if is_disponible else "#ffebee"
+            estado = lab.estadoLaboratorios.lower().strip()
+            is_disponible = estado == "disponible" 
+            color_text = "#E74C3C" if not is_disponible else "#2ECC71"
+            color_bg = "#FADBD8" if not is_disponible else "#D5F5E3"
             
             estado_badge = ctk.CTkFrame(row, fg_color=color_bg, corner_radius=12, height=24)
-            estado_badge.place(relx=0.55, rely=0.5, anchor="center")
+            estado_badge.place(relx=0.65, rely=0.5, anchor="center")
             
             lbl_est = ctk.CTkLabel(estado_badge, text=lab.estadoLaboratorios.upper(), font=("Arial", 10, "bold"), text_color=color_text)
             lbl_est.pack(padx=10)
@@ -152,10 +167,26 @@ class LaboratoriosFrame(ctk.CTkFrame):
             acts = ctk.CTkFrame(row, fg_color="transparent")
             acts.place(relx=0.85, rely=0.5, anchor="center")
             
-            ctk.CTkButton(acts, text="✏️", width=32, height=32, fg_color="#ffae42", hover_color="#e67e22", 
-                         font=("Segoe UI Emoji", 14), corner_radius=6, command=lambda l=lab: self.on_edit_lab(l)).pack(side="left", padx=3)
-            ctk.CTkButton(acts, text="🗑️", width=32, height=32, fg_color="#ff5c5c", hover_color="#c0392b", 
-                         font=("Segoe UI Emoji", 14), corner_radius=6, command=lambda l=lab: self.on_delete_lab(l)).pack(side="left", padx=3)
+            # Estado para deshabilitar edición
+            is_active = lab.estadoLaboratorios.lower().strip() == "disponible"
+            btn_edit_state = "normal" if is_active else "disabled"
+            btn_edit_color = "#ffae42" if is_active else "#bdc3c7"
+            
+            ctk.CTkButton(acts, text="✏️", width=32, height=32, 
+                         fg_color=btn_edit_color, hover_color="#e67e22", 
+                         state=btn_edit_state,
+                         font=("Segoe UI Emoji", 14), corner_radius=6, 
+                         command=lambda l=lab: self.on_edit_lab(l)).pack(side="left", padx=3)
+            
+            # Botón de Toggle Estado (Basura / Reciclar)
+            toggle_icon = "🗑️" if is_active else "🔄"
+            toggle_color = "#ff5c5c" if is_active else "#2ecc71"
+            toggle_hover = "#c0392b" if is_active else "#27ae60"
+            
+            ctk.CTkButton(acts, text=toggle_icon, width=32, height=32, 
+                         fg_color=toggle_color, hover_color=toggle_hover, 
+                         font=("Segoe UI Emoji", 14), corner_radius=6, 
+                         command=lambda l=lab: self.on_delete_lab(l)).pack(side="left", padx=3)
 
             # --- CARD DE ESTADÍSTICA ---
             stat_card = LaboratorioStatCard(self.stats_inner, title=lab.nombreLaboratorios, count=lab.instrument_count, color=color)
@@ -167,6 +198,9 @@ class LaboratoriosFrame(ctk.CTkFrame):
         ctk.CTkLabel(empty, text="🔍", font=("Arial", 60)).pack()
         ctk.CTkLabel(empty, text="Sin laboratorios registrados", font=("Arial", 16, "bold"), text_color="#bdc3c7").pack(pady=10)
 
-    def on_add_lab(self): print("Agregar")
-    def on_edit_lab(self, lab): print(f"Editar {lab.nombreLaboratorios}")
-    def on_delete_lab(self, lab): print(f"Eliminar {lab.nombreLaboratorios}")
+    def on_add_lab(self): 
+        CreateLaboratorioModal(self.winfo_toplevel(), parent_view=self)
+    def on_edit_lab(self, lab): 
+        EditLaboratorioModal(self.winfo_toplevel(), lab_data=lab, parent_view=self)
+    def on_delete_lab(self, lab): 
+        DeleteLaboratorioModal(self.winfo_toplevel(), lab_data=lab, parent_view=self)

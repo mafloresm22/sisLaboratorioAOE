@@ -17,6 +17,7 @@ CREATE TABLE Unidad (
 CREATE TABLE Laboratorios (
     idLaboratorios SERIAL PRIMARY KEY,
     nombreLaboratorios VARCHAR(100) NOT NULL,
+    pisoLaboratorios VARCHAR(50) NOT NULL,
     estadoLaboratorios VARCHAR(50)
 );
 

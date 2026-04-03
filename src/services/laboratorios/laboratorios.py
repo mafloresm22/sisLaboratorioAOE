@@ -8,26 +8,25 @@ class LaboratorioService:
         if not conn: return []
         try:
             cursor = conn.cursor()
-            # Basado en el esquema real: Tabla 'Instrumento', FK 'laboratorioId'
             query = """
                 SELECT 
-                    L.idLaboratorios, 
-                    L.nombreLaboratorios, 
-                    L.estadoLaboratorios,
-                    COUNT(I.idInstrumento) as total_instrumentos
+                    L.idlaboratorios, 
+                    L.nombrelaboratorios, 
+                    L."pisoLaboratorios",
+                    L.estadolaboratorios,
+                    COUNT(I.idinstrumento) as total_instrumentos
                 FROM Laboratorios L
-                LEFT JOIN Instrumento I ON L.idLaboratorios = I.laboratorioId
-                GROUP BY L.idLaboratorios, L.nombreLaboratorios, L.estadoLaboratorios
-                ORDER BY L.idLaboratorios ASC
+                LEFT JOIN Instrumento I ON L.idlaboratorios = I.laboratorioid
+                GROUP BY L.idlaboratorios, L.nombrelaboratorios, L."pisoLaboratorios", L.estadolaboratorios
+                ORDER BY L.idlaboratorios ASC
             """
             cursor.execute(query)
-            return [Laboratorio(idLaboratorios=l[0], nombreLaboratorios=l[1], estadoLaboratorios=l[2], instrument_count=l[3]) for l in cursor.fetchall()]
+            return [Laboratorio(idLaboratorios=l[0], nombreLaboratorios=l[1], pisoLaboratorios=l[2], estadoLaboratorios=l[3], instrument_count=l[4]) for l in cursor.fetchall()]
         except Exception as e:
-            # Si la relación Instrumento no existe, devolvemos sin el conteo
-            if "no existe la relación" in str(e).lower():
+            if "no existe la relación" in str(e).lower() or "instrumento" in str(e).lower():
                 try:
-                    cursor.execute("SELECT idLaboratorios, nombreLaboratorios, estadoLaboratorios FROM Laboratorios ORDER BY idLaboratorios ASC")
-                    return [Laboratorio(idLaboratorios=l[0], nombreLaboratorios=l[1], estadoLaboratorios=l[2], instrument_count=0) for l in cursor.fetchall()]
+                    cursor.execute('SELECT idlaboratorios, nombrelaboratorios, "pisoLaboratorios", estadolaboratorios FROM Laboratorios ORDER BY idlaboratorios ASC')
+                    return [Laboratorio(idLaboratorios=l[0], nombreLaboratorios=l[1], pisoLaboratorios=l[2], estadoLaboratorios=l[3], instrument_count=0) for l in cursor.fetchall()]
                 except:
                     return []
             print(f"🔴 Error SQL (get_all_laboratorios): {e}")
@@ -36,18 +35,27 @@ class LaboratorioService:
             if conn: conn.close()
 
     @staticmethod
-    def create_laboratorio(nombre):
+    def create_laboratorio(nombre, piso):
         conn = DatabaseConnection.get_connection()
         if not conn: return False
         try:
             cursor = conn.cursor()
-            check_query = "SELECT idLaboratorios FROM Laboratorios WHERE LOWER(nombreLaboratorios) = LOWER(%s)"
+            check_query = """
+                SELECT 
+                    idlaboratorios 
+                FROM Laboratorios 
+                WHERE LOWER(nombrelaboratorios) = LOWER(%s)
+            """
             cursor.execute(check_query, (nombre.strip(),))
             if cursor.fetchone():
                 return "exists"
 
-            query = "INSERT INTO Laboratorios (nombreLaboratorios) VALUES (%s) RETURNING idLaboratorios"
-            cursor.execute(query, (nombre.strip(),))
+            query = """
+                INSERT INTO Laboratorios (nombrelaboratorios, "pisoLaboratorios", estadolaboratorios) 
+                VALUES (%s, %s, 'disponible') 
+                RETURNING idlaboratorios
+            """
+            cursor.execute(query, (nombre.strip(), piso.strip()))
             new_id = cursor.fetchone()[0]
             conn.commit()
             return new_id
@@ -58,18 +66,18 @@ class LaboratorioService:
             if conn: conn.close()
 
     @staticmethod
-    def update_laboratorio(id_laboratorio, nuevo_nombre):
+    def update_laboratorio(id_laboratorio, nuevo_nombre, nuevo_piso):
         conn = DatabaseConnection.get_connection()
         if not conn: return False
         try:
             cursor = conn.cursor()
-            check_query = "SELECT idLaboratorios FROM Laboratorios WHERE LOWER(nombreLaboratorios) = LOWER(%s) AND idLaboratorios <> %s"
+            check_query = 'SELECT idlaboratorios FROM Laboratorios WHERE LOWER(nombrelaboratorios) = LOWER(%s) AND idlaboratorios <> %s'
             cursor.execute(check_query, (nuevo_nombre.strip(), id_laboratorio))
             if cursor.fetchone():
                 return "exists"
             
-            query = "UPDATE Laboratorios SET nombreLaboratorios = %s WHERE idLaboratorios = %s"
-            cursor.execute(query, (nuevo_nombre.strip(), id_laboratorio))
+            query = 'UPDATE Laboratorios SET nombrelaboratorios = %s, "pisoLaboratorios" = %s WHERE idlaboratorios = %s'
+            cursor.execute(query, (nuevo_nombre.strip(), nuevo_piso.strip(), id_laboratorio))
             conn.commit()
             return True
         except Exception as e:
@@ -79,19 +87,18 @@ class LaboratorioService:
             if conn: conn.close()
 
     @staticmethod
-    def delete_laboratorio(id_laboratorio):
+    def toggle_status(id_laboratorio, current_status):
         conn = DatabaseConnection.get_connection()
         if not conn: return False
         try:
+            new_status = 'no disponible' if current_status.lower() == 'disponible' else 'disponible'
             cursor = conn.cursor()
-            query = "DELETE FROM Laboratorios WHERE idLaboratorios = %s"
-            cursor.execute(query, (id_laboratorio,))
+            query = 'UPDATE Laboratorios SET estadolaboratorios = %s WHERE idlaboratorios = %s'
+            cursor.execute(query, (new_status, id_laboratorio))
             conn.commit()
             return True
         except Exception as e:
-            if "foreign key" in str(e).lower():
-                return "in_use"
-            print(f"🔴 Error SQL (delete_laboratorio): {e}")
+            print(f"🔴 Error SQL (toggle_status): {e}")
             return False
         finally:
             if conn: conn.close()

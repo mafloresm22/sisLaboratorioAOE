@@ -5,7 +5,7 @@ from interfaces.components.mensajes import Alerts
 class DeleteUnidadModal(ctk.CTkToplevel):
     def __init__(self, master, unit_data, parent_view=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.withdraw() # Ocultar mientras se configura
+        self.withdraw()
         self.parent_view = parent_view
         self.id_unidad = unit_data.idUnidad
         self.nombre_unidad = unit_data.nombreUnidad
