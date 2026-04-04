@@ -78,7 +78,7 @@ CREATE TABLE DetallePrestamo (
 
 -- 5. DATOS INICIALES (SEED)
 INSERT INTO Rol (nombreRol) VALUES ('Administrador'), ('Docente');
-INSERT INTO EstadoConservacion (nombreEstado) VALUES ('Nuevo'), ('Bueno'), ('Regular'), ('Malo');
+INSERT INTO EstadoConservacion (idEstadoCons, nombreEstado) VALUES (5, 'Nuevo'), (4, 'Bueno'), (3, 'Regular'), (2, 'Malo');
 INSERT INTO Laboratorios (nombreLaboratorios) VALUES ('Lab. Biología'), ('Lab. Física'), ('Lab. Química'), ('Aula Ecologica');
 INSERT INTO Unidad (nombreUnidad) VALUES ('un.'), ('kg'), ('m'), ('cm'), ('caj'), ('gr');
 

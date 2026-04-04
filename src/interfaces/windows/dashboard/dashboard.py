@@ -6,6 +6,7 @@ from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
 from interfaces.windows.usuarios.usuarios import UsuariosFrame
 from interfaces.windows.laboratorios.laboratorios import LaboratoriosFrame
+from interfaces.windows.inventario.instrumentos import InstrumentosFrame
 
 class ModuleCard(ctk.CTkFrame):
     def __init__(self, master, title, icon_path, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
@@ -107,7 +108,7 @@ class DashboardWindow(ctk.CTkToplevel):
         
         # DEFINICIÓN DE MENÚS Y SUBMENÚS CON ICONOS
         self.menu_items = {
-            "Módulos": ["Roles", "Unidad", "Laboratorios", "E.Conservación"],
+            "Módulos": ["Roles", "Unidad", "Laboratorios"],
             "Usuarios": None,
             "Inventario": None,
             "Préstamos": None,
@@ -245,13 +246,11 @@ class DashboardWindow(ctk.CTkToplevel):
         module_submenus = {
             "Roles": (os.path.join(icons_dir, "13051347_roles.png"), "Gestión de permisos", "#1976d2", "#e3f2fd"), 
             "Unidad": (os.path.join(icons_dir, "8289236_unidad.png"), "Unidades de medida", "#2e7d32", "#e8f5e9"),
-            "Laboratorios": (os.path.join(icons_dir, "7918318_laboratorio.png"), "Sedes y laboratorios", "#7b1fa2", "#f3e5f5"),
-            "E.Conservación": (os.path.join(icons_dir, "13500912_estadoConservacion.png"), "Estados de equipos", "#ef6c00", "#fff3e0")
+            "Laboratorios": (os.path.join(icons_dir, "7918318_laboratorio.png"), "Sedes y laboratorios", "#7b1fa2", "#f3e5f5")
         }
         
         for i, (mod_name, data) in enumerate(module_submenus.items()):
             icon_path, desc_text, color, bg_c = data
-            extra_px = 25 if mod_name == "E.Conservación" else 0
             
             card = ModuleCard(
                 cards_container, 
@@ -260,8 +259,7 @@ class DashboardWindow(ctk.CTkToplevel):
                 description=desc_text,
                 color=color,
                 bg_color=bg_c,
-                command=lambda m=mod_name: self.switch_view(m),
-                extra_padx=extra_px
+                command=lambda m=mod_name: self.switch_view(m)
             )
             card.grid(row=0, column=i, padx=15, pady=20, sticky="nsew")
             cards_container.grid_columnconfigure(i, weight=1)
@@ -285,9 +283,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.views["Usuarios"] = UsuariosFrame(self.main_content)
         
         # --- 5. Vista INVENTARIO ---
-        inv_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-        ctk.CTkLabel(inv_frame, text="Gestión de Instrumentos (CRUD)", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
-        self.views["Inventario"] = inv_frame
+        self.views["Inventario"] = InstrumentosFrame(self.main_content)
         
         # --- 6. Vista PRÉSTAMOS ---
         pres_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
@@ -317,6 +313,8 @@ class DashboardWindow(ctk.CTkToplevel):
             
         # Restablecer botones y optionmenus
         for base_name, btn in self.nav_buttons.items():
+            if not btn.winfo_exists():
+                continue
             if isinstance(btn, ctk.CTkButton):
                 btn.configure(fg_color="transparent")
             elif isinstance(btn, ctk.CTkOptionMenu):
