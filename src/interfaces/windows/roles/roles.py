@@ -28,11 +28,21 @@ class SmallBox(ctk.CTkFrame):
         self.btn_container = ctk.CTkFrame(self.actions_frame, fg_color="transparent")
         self.btn_container.pack(side="right")
         
+        # Rutas de iconos
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+        buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+        
+        # Cargar imágenes para botones
+        img_delete = Image.open(os.path.join(buttons_dir, "delete_2550318.png"))
+        self.icon_delete = ctk.CTkImage(light_image=img_delete, size=(20, 20))
+        
+        img_edit = Image.open(os.path.join(buttons_dir, "edit_3808637.png"))
+        self.icon_edit = ctk.CTkImage(light_image=img_edit, size=(20, 20))
+
         # Botón Eliminar
         self.btn_delete = ctk.CTkButton(
-            self.btn_container, text="🗑️", width=38, height=38, corner_radius=19,
-            fg_color="#e74c3c", text_color="white", hover_color="#c0392b",
-            font=("Segoe UI Emoji", 15), 
+            self.btn_container, text="", image=self.icon_delete, width=38, height=38, corner_radius=19,
+            fg_color="#e74c3c", hover_color="#c0392b",
             command=on_delete,
             border_width=0
         )
@@ -40,9 +50,8 @@ class SmallBox(ctk.CTkFrame):
 
         # Botón Editar
         self.btn_edit = ctk.CTkButton(
-            self.btn_container, text="✏️", width=38, height=38, corner_radius=19,
-            fg_color="#f39c12", text_color="white", hover_color="#e67e22",
-            font=("Segoe UI Emoji", 15),
+            self.btn_container, text="", image=self.icon_edit, width=38, height=38, corner_radius=19,
+            fg_color="#f39c12", hover_color="#e67e22",
             command=on_edit,
             border_width=0
         )
@@ -53,7 +62,13 @@ class SmallBox(ctk.CTkFrame):
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(70, 70))
             self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
         except Exception:
-            self.lbl_icon = ctk.CTkLabel(self, font=("Segoe UI Emoji", 80), text_color="#ffffff")
+            # Fallback con icono genérico
+            try:
+                img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
+                icon_other = ctk.CTkImage(light_image=img_other, size=(70, 70))
+                self.lbl_icon = ctk.CTkLabel(self, image=icon_other, text="")
+            except:
+                self.lbl_icon = ctk.CTkLabel(self, text="R", font=("Arial", 60, "bold"), text_color="#ffffff")
             
         self.lbl_icon.place(relx=0.88, rely=0.35, anchor="center")
 
@@ -105,10 +120,19 @@ class RolesFrame(ctk.CTkFrame):
         self.right_container = ctk.CTkFrame(self, fg_color="transparent")
         self.right_container.grid(row=0, column=2, sticky="nsew", padx=20, pady=20)
         
+        # Rutas de iconos
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+        buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+        
+        # Cargar icono agregar
+        img_add = Image.open(os.path.join(buttons_dir, "add_6902311.png"))
+        self.icon_add = ctk.CTkImage(light_image=img_add, size=(24, 24))
+
         # --- BOTÓN AGREGAR ROL ---
         self.btn_add_role = ctk.CTkButton(
             self.right_container, 
-            text="➕ Agregar Nuevo Rol", 
+            text=" Agregar Nuevo Rol", 
+            image=self.icon_add,
             font=("Arial", 16, "bold"),
             fg_color="#186ccf",
             hover_color="#145cb3",
@@ -150,12 +174,19 @@ class RolesFrame(ctk.CTkFrame):
             empty_container.pack(fill="both", expand=True, pady=100)
             
             # Icono grande de "vacio" o "sin datos"
-            lbl_empty_icon = ctk.CTkLabel(
-                empty_container, 
-                text="👥", 
-                font=("Arial", 120), 
-                text_color="#d0d0d0"
-            )
+            try:
+                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+                buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+                img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
+                icon_other = ctk.CTkImage(light_image=img_other, size=(120, 120))
+                lbl_empty_icon = ctk.CTkLabel(empty_container, image=icon_other, text="")
+            except:
+                lbl_empty_icon = ctk.CTkLabel(
+                    empty_container, 
+                    text="Sin Datos", 
+                    font=("Arial", 60, "bold"), 
+                    text_color="#d0d0d0"
+                )
             lbl_empty_icon.pack()
             
             # Texto Informativo
@@ -176,8 +207,7 @@ class RolesFrame(ctk.CTkFrame):
             )
             lbl_hint.pack()
         else:
-            # Si hay roles, los mostramos como SmallBox
-            # Paleta de colores y mapeo de iconos profesionales
+            # Si hay roles
             base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
             icons_dir = os.path.join(base_dir, "assets", "icons", "roles_img")
             
@@ -236,7 +266,14 @@ class RolesFrame(ctk.CTkFrame):
                 ctk_img = ctk.CTkImage(light_image=img, size=(32, 32))
                 lbl_ico = ctk.CTkLabel(stat_card, image=ctk_img, text="")
             except:
-                lbl_ico = ctk.CTkLabel(stat_card, text="📊", font=("Arial", 28))
+                try:
+                    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+                    buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+                    img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
+                    icon_other = ctk.CTkImage(light_image=img_other, size=(32, 32))
+                    lbl_ico = ctk.CTkLabel(stat_card, image=icon_other, text="")
+                except:
+                    lbl_ico = ctk.CTkLabel(stat_card, text="◈", font=("Arial", 28))
                 
             lbl_ico.pack(side="left", padx=15, pady=15)
             
