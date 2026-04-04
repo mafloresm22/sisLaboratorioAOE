@@ -41,7 +41,6 @@ CREATE TABLE Usuarios (
 
 CREATE TABLE Instrumento (
     idInstrumento SERIAL PRIMARY KEY,
-    nombreInstrumento VARCHAR(150) NOT NULL,
     descripcionInstrumento TEXT,
     cantidadInstrumento INTEGER DEFAULT 0 CHECK (cantidadInstrumento >= 0),
     marcaInstrumento VARCHAR(100),

@@ -1,13 +1,29 @@
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import os
-from models.instrumentos.instrumentos import Instrumento
+from tkinter import messagebox
+from utils.excel_importer import ExcelImporter
+from services.instrumentos.instrumentos import InstrumentoService
 
 class InstrumentosFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.configure(fg_color="white", corner_radius=15)
         
+        # --- Estado de Paginación ---
+        self.current_page = 1
+        self.items_per_page = 30
+        self.all_data = [] # Todos los datos de la DB
+        self.filtered_data = [] # Datos después de filtrar
+        
+        # Cargar imagen por defecto
+        try:
+            ruta_imagen_defecto = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../assets/icons/dashboard/default_instrumento.png"))
+            self.img_default = ctk.CTkImage(light_image=Image.open(ruta_imagen_defecto), dark_image=Image.open(ruta_imagen_defecto), size=(36, 36))
+        except Exception as e:
+            print("Error cargando imagen por defecto:", e)
+            self.img_default = None
+            
         # --- Layout Principal ---
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -48,6 +64,16 @@ class InstrumentosFrame(ctk.CTkFrame):
         )
         self.btn_legend.pack(side="left", padx=(0, 10))
 
+        # Botón para Importar Excel
+        self.btn_import_excel = ctk.CTkButton(
+            self.actions_container, text="📁 Importar Excel", 
+            width=160, height=45, corner_radius=10,
+            fg_color="#8e44ad", hover_color="#732d91", text_color="white",
+            font=("Arial", 14, "bold"),
+            command=self.on_import_excel
+        )
+        self.btn_import_excel.pack(side="left", padx=(0, 10))
+
         # Botón de Agregar
         self.btn_add = ctk.CTkButton(
             self.actions_container, text="➕ Agregar Instrumento", 
@@ -70,8 +96,8 @@ class InstrumentosFrame(ctk.CTkFrame):
         self.table_header.pack_propagate(False)
 
         self.col_map = {
-            "N°": 0.02, "IMAGEN": 0.06, "DESCRIPCIÓN": 0.11, "CANT.": 0.30, 
-            "MARCA": 0.36, "MODELO": 0.43, "SERIE": 0.50, "COLOR": 0.57, 
+            "N°": 0.02, "IMAGEN": 0.06, "DESCRIPCIÓN": 0.11, "CANT.": 0.35, 
+            "MARCA": 0.40, "MODELO": 0.46, "SERIE": 0.52, "COLOR": 0.58, 
             "TAMAÑO": 0.64, "CONSERV.": 0.71, "UBICACIÓN": 0.78,
             "PISO": 0.87, "ACCIONES": 0.95
         }
@@ -92,49 +118,44 @@ class InstrumentosFrame(ctk.CTkFrame):
         self.pagination_frame.grid(row=2, column=0, sticky="ew", padx=25, pady=(0, 20))
         
         # Botones y etiquetas
-        self.btn_prev = ctk.CTkButton(self.pagination_frame, text="◀ Anterior", width=110, height=35, corner_radius=8, font=("Arial", 12, "bold"), fg_color="#34495e", hover_color="#2c3e50")
+        self.btn_prev = ctk.CTkButton(self.pagination_frame, text="◀ Anterior", width=110, height=35, corner_radius=8, font=("Arial", 12, "bold"), fg_color="#34495e", hover_color="#2c3e50", command=self.prev_page)
         self.btn_prev.pack(side="left", padx=5)
         
         self.lbl_pageinfo = ctk.CTkLabel(self.pagination_frame, text="Página 1 de 1", font=("Arial", 12, "bold"), text_color="#7f8c8d")
         self.lbl_pageinfo.pack(side="left", padx=15)
         
-        self.btn_next = ctk.CTkButton(self.pagination_frame, text="Siguiente ▶", width=110, height=35, corner_radius=8, font=("Arial", 12, "bold"), fg_color="#34495e", hover_color="#2c3e50")
+        self.btn_next = ctk.CTkButton(self.pagination_frame, text="Siguiente ▶", width=110, height=35, corner_radius=8, font=("Arial", 12, "bold"), fg_color="#34495e", hover_color="#2c3e50", command=self.next_page)
         self.btn_next.pack(side="left", padx=5)
         
         self.lbl_total_records = ctk.CTkLabel(self.pagination_frame, text="Total: 0 instrumentos registrados", font=("Arial", 12, "bold"), text_color="#95a5a6")
         self.lbl_total_records.pack(side="right", padx=10)
 
-        self.load_data() # Cargar la vista de tabla
+        self.load_data()
 
     def load_data(self):
-        """Lógica para renderizar los datos o estado vacío de la tabla"""
         # Limpiar tabla
         for child in self.scroll_table.winfo_children():
             child.destroy()
 
-        # --- DATOS DE EJEMPLO ---
-        inst1 = Instrumento(
-            idInstrumento=1, nombreInstrumento="Microscopio Binocular", 
-            cantidadInstrumento=5, marcaInstrumento="Olympus", 
-            modeloInstrumento="CX23", serieInstrumento="SN-00123", 
-            colorInstrumento="Blanco", tamanoInstrumento="Mediano", 
-            idEstadoCons=5, usuarioId=1, laboratorioId=1, pisoInstrumento="2do Piso"
-        )
-        inst1.nombre_laboratorio = "Lab. Biología"
-
-        inst2 = Instrumento(
-            idInstrumento=2, nombreInstrumento="Balanza Analítica", 
-            cantidadInstrumento=2, marcaInstrumento="Ohaus", 
-            modeloInstrumento="Pioneer", serieInstrumento="SN-99881", 
-            colorInstrumento="Gris", tamanoInstrumento="Compacto", 
-            idEstadoCons=4, usuarioId=2, laboratorioId=3, pisoInstrumento="1er Piso"
-        )
-        inst2.nombre_laboratorio = "Lab. Química"
-
-        datos_en_tabla = [inst1, inst2] 
+        # Cargar todos los datos si la lista está vacía (primera vez o recarga)
+        if not self.all_data:
+            self.all_data = InstrumentoService.get_all_instrumentos()
+            self.filtered_data = list(self.all_data)
+        
+        # --- Lógica de Paginación ---
+        total_items = len(self.filtered_data)
+        total_pages = max(1, (total_items + self.items_per_page - 1) // self.items_per_page)
+        
+        # Ajustar página actual si es necesario
+        if self.current_page > total_pages: self.current_page = total_pages
+        if self.current_page < 1: self.current_page = 1
+        
+        start_idx = (self.current_page - 1) * self.items_per_page
+        end_idx = start_idx + self.items_per_page
+        datos_en_tabla = self.filtered_data[start_idx:end_idx] 
         
         # Validar Empty State (Sin Registros)
-        if not datos_en_tabla:
+        if not self.filtered_data:
             msg_frame = ctk.CTkFrame(self.scroll_table, fg_color="transparent")
             msg_frame.pack(fill="both", expand=True, pady=80)
             
@@ -152,17 +173,21 @@ class InstrumentosFrame(ctk.CTkFrame):
             return
 
         # Actualizar info de paginación
-        self.lbl_pageinfo.configure(text="Página 1 de 1")
-        self.lbl_total_records.configure(text=f"Total: {len(datos_en_tabla)} instrumentos registrados")
-        self.btn_prev.configure(state="normal", fg_color="#34495e")
-        self.btn_next.configure(state="normal", fg_color="#34495e")
+        self.lbl_pageinfo.configure(text=f"Página {self.current_page} de {total_pages}")
+        self.lbl_total_records.configure(text=f"Total: {total_items} instrumentos registrados")
+        
+        # Estados de botones
+        self.btn_prev.configure(state="normal" if self.current_page > 1 else "disabled", 
+                              fg_color="#34495e" if self.current_page > 1 else "#95a5a6")
+        self.btn_next.configure(state="normal" if self.current_page < total_pages else "disabled", 
+                              fg_color="#34495e" if self.current_page < total_pages else "#95a5a6")
 
         for i, item in enumerate(datos_en_tabla):
             # Determinamos el color base de la fila
             row_color = "#ffffff" if i % 2 == 0 else "#fcfcfc"
             
-            # --- Fila interactiva ---
-            row = ctk.CTkFrame(self.scroll_table, fg_color=row_color, height=80, corner_radius=12)
+            # --- Fila interactiva --- (Altura aumentada para descripciones)
+            row = ctk.CTkFrame(self.scroll_table, fg_color=row_color, height=90, corner_radius=12)
             row.pack(fill="x", pady=4, padx=2) 
             row.pack_propagate(False)
 
@@ -189,11 +214,20 @@ class InstrumentosFrame(ctk.CTkFrame):
             # 2. IMAGEN (Con borde moderno y fondo blanco)
             img_frame = ctk.CTkFrame(row, width=54, height=54, fg_color="#ffffff", border_width=1, border_color="#e0e0e0", corner_radius=12)
             img_frame.place(relx=self.col_map["IMAGEN"], rely=0.5, anchor="center")
-            ctk_box = ctk.CTkLabel(img_frame, text="📦", font=("Arial", 26))
-            ctk_box.place(relx=0.5, rely=0.5, anchor="center")
+            
+            if not item.imagenInstrumento and self.img_default:
+                lbl_img = ctk.CTkLabel(img_frame, text="", image=self.img_default)
+                lbl_img.place(relx=0.5, rely=0.5, anchor="center")
+            else:
+                ctk_box = ctk.CTkLabel(img_frame, text="📦", font=("Arial", 26))
+                ctk_box.place(relx=0.5, rely=0.5, anchor="center")
 
-            # 3. DESCRIPCIÓN (Letra más grande y negrita)
-            lbl_desc = ctk.CTkLabel(row, text=item.nombreInstrumento, font=("Arial", 13, "bold"), text_color="#2c3e50")
+            # 3. DESCRIPCIÓN (Letra pequeña y con wrap para textos largos)
+            lbl_desc = ctk.CTkLabel(
+                row, text=item.descripcionInstrumento or "Sin descripción", 
+                font=("Arial", 11, "bold"), text_color="#2c3e50",
+                justify="left", wraplength=350 # Wrap robusto para descripciones largas
+            )
             lbl_desc.place(relx=self.col_map["DESCRIPCIÓN"], rely=0.5, anchor="w")
 
             # 4. CANTIDAD (Decorado con indicador visual)
@@ -253,7 +287,6 @@ class InstrumentosFrame(ctk.CTkFrame):
                 w.bind("<Leave>", on_leave, add="+")
 
     def handle_action(self, choice, item, option_menu):
-        """Maneja las acciones del Dropdown, y resetea el texto a '⚙️ Acción'"""
         option_menu.set("⚙️ Acción")
         if "Editar" in choice:
             print(f"Editando el ID {item.idInstrumento}")
@@ -262,8 +295,21 @@ class InstrumentosFrame(ctk.CTkFrame):
 
     def filter_data(self, event=None):
         """Lógica para filtrar la tabla según el buscador"""
-        query = self.search_entry.get().lower()
-        print(f"Buscando: {query}")
+        query = self.search_entry.get().lower().strip()
+        
+        if not query:
+            self.filtered_data = list(self.all_data)
+        else:
+            self.filtered_data = [
+                item for item in self.all_data 
+                if query in (item.descripcionInstrumento or "").lower() or 
+                   query in (item.marcaInstrumento or "").lower() or 
+                   query in (item.modeloInstrumento or "").lower() or 
+                   query in (item.serieInstrumento or "").lower()
+            ]
+        
+        self.current_page = 1 # Reset a página 1 al buscar
+        self.load_data()
 
     def on_show_legend(self):
         """Muestra una alerta/modal con la leyenda de estados de conservación"""
@@ -279,6 +325,32 @@ class InstrumentosFrame(ctk.CTkFrame):
     def on_add_instrumento(self):
         """Abre el modal para agregar instrumento"""
         print("Abriendo modal para agregar instrumento...")
+
+    def on_import_excel(self):
+        """Abre el diálogo para importar un Excel de instrumentos y notifica el resultado"""
+        from interfaces.components.mensajes import Alerts
+        success, message = ExcelImporter.importar_instrumentos()
+        
+        if success:
+            Alerts.show_info("Importación Exitosa", message, master=self.master)
+            self.all_data = [] # Reset data to force reload from DB
+            self.current_page = 1
+            self.load_data() 
+        else:
+            if "cancelada" not in message.lower():
+                Alerts.show_error("Error de Importación", message, master=self.master)
+
+    def prev_page(self):
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.load_data()
+
+    def next_page(self):
+        total_items = len(self.filtered_data)
+        total_pages = max(1, (total_items + self.items_per_page - 1) // self.items_per_page)
+        if self.current_page < total_pages:
+            self.current_page += 1
+            self.load_data()
 
 if __name__ == "__main__":
     app = ctk.CTk()

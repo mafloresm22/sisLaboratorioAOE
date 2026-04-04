@@ -3,3 +3,4 @@ psycopg2-binary
 CustomTkinter
 bcrypt
 CTkMessagebox
+openpyxl

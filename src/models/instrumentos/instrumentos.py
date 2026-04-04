@@ -1,5 +1,5 @@
 class Instrumento:
-    def __init__(self, idInstrumento=None, nombreInstrumento=None, 
+    def __init__(self, idInstrumento=None, 
     descripcionInstrumento=None, cantidadInstrumento=None, 
     marcaInstrumento=None, modeloInstrumento=None, 
     serieInstrumento=None, colorInstrumento=None, 
@@ -7,7 +7,6 @@ class Instrumento:
     idEstadoCons=None, usuarioId=None, laboratorioId=None, 
     unidadId=None, imagenInstrumento=None, estado=None):
         self.idInstrumento = idInstrumento
-        self.nombreInstrumento = nombreInstrumento
         self.descripcionInstrumento = descripcionInstrumento
         self.cantidadInstrumento = cantidadInstrumento
         self.marcaInstrumento = marcaInstrumento
@@ -26,7 +25,6 @@ class Instrumento:
     def to_dict(self):
         return {
             "idInstrumento": self.idInstrumento,
-            "nombreInstrumento": self.nombreInstrumento,
             "descripcionInstrumento": self.descripcionInstrumento,
             "cantidadInstrumento": self.cantidadInstrumento,
             "marcaInstrumento": self.marcaInstrumento,
