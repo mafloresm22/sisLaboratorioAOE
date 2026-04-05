@@ -6,6 +6,11 @@ from interfaces.windows.laboratorios.create_lab import CreateLaboratorioModal
 from interfaces.windows.laboratorios.edit_lab import EditLaboratorioModal
 from interfaces.windows.laboratorios.delete_lab import DeleteLaboratorioModal
 
+# Directorio de iconos de botones
+_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
+))
+
 class LaboratorioStatCard(ctk.CTkFrame):
     def __init__(self, master, title, count, color, **kwargs):
         super().__init__(master, fg_color="#f8f9fa", border_width=1, border_color="#e0e0e0", corner_radius=12, **kwargs)
@@ -60,8 +65,11 @@ class LaboratoriosFrame(ctk.CTkFrame):
         )
         self.lbl_title.pack(side="left")
 
+        add_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+        )
         self.btn_add = ctk.CTkButton(
-            self.inner_header, text="➕ Nuevo Laboratorio", width=170, height=45,
+            self.inner_header, text=" Nuevo Laboratorio", image=add_img, width=190, height=45,
             fg_color="#186ccf", hover_color="#145cb3",
             font=("Arial", 14, "bold"), corner_radius=10,
             command=self.on_add_lab
@@ -172,20 +180,26 @@ class LaboratoriosFrame(ctk.CTkFrame):
             btn_edit_state = "normal" if is_active else "disabled"
             btn_edit_color = "#ffae42" if is_active else "#bdc3c7"
             
-            ctk.CTkButton(acts, text="✏️", width=32, height=32, 
+            # Icono Editar
+            edit_img = ctk.CTkImage(
+                Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(18, 18)
+            )
+            ctk.CTkButton(acts, text="", image=edit_img, width=34, height=34, 
                          fg_color=btn_edit_color, hover_color="#e67e22", 
-                         state=btn_edit_state,
-                         font=("Segoe UI Emoji", 14), corner_radius=6, 
+                         state=btn_edit_state, corner_radius=6, 
                          command=lambda l=lab: self.on_edit_lab(l)).pack(side="left", padx=3)
             
             # Botón de Toggle Estado (Basura / Reciclar)
-            toggle_icon = "🗑️" if is_active else "🔄"
+            toggle_path = "delete_2550318.png" if is_active else "show_8358982.png"
+            toggle_img = ctk.CTkImage(
+                Image.open(os.path.join(_BUTTON_ICONS_DIR, toggle_path)), size=(18, 18)
+            )
             toggle_color = "#ff5c5c" if is_active else "#2ecc71"
             toggle_hover = "#c0392b" if is_active else "#27ae60"
             
-            ctk.CTkButton(acts, text=toggle_icon, width=32, height=32, 
+            ctk.CTkButton(acts, text="", image=toggle_img, width=34, height=34, 
                          fg_color=toggle_color, hover_color=toggle_hover, 
-                         font=("Segoe UI Emoji", 14), corner_radius=6, 
+                         corner_radius=6, 
                          command=lambda l=lab: self.on_delete_lab(l)).pack(side="left", padx=3)
 
             # --- CARD DE ESTADÍSTICA ---
@@ -195,8 +209,11 @@ class LaboratoriosFrame(ctk.CTkFrame):
     def show_empty_state(self):
         empty = ctk.CTkFrame(self.scroll_table, fg_color="transparent")
         empty.pack(pady=80)
-        ctk.CTkLabel(empty, text="🔍", font=("Arial", 60)).pack()
-        ctk.CTkLabel(empty, text="Sin laboratorios registrados", font=("Arial", 16, "bold"), text_color="#bdc3c7").pack(pady=10)
+        show_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(80, 80)
+        )
+        ctk.CTkLabel(empty, text="", image=show_img).pack()
+        ctk.CTkLabel(empty, text="Sin laboratorios registrados", font=("Arial", 16, "bold"), text_color="#bdc3c7").pack(pady=20)
 
     def on_add_lab(self): 
         CreateLaboratorioModal(self.winfo_toplevel(), parent_view=self)

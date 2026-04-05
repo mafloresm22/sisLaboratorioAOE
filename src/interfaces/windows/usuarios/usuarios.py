@@ -7,6 +7,11 @@ from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
 from interfaces.windows.usuarios.restablecer_password import RestablecerPasswordModal
 from interfaces.windows.usuarios.delete_usuarios import DeleteUsuarioModal
 
+# Directorio de iconos de botones
+_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
+))
+
 class UserBox(ctk.CTkFrame):
     def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
         is_admin = role_name.lower() == "administrador"
@@ -60,32 +65,35 @@ class UserBox(ctk.CTkFrame):
         self.btn_container.pack(side="right")
         
         # Botón Eliminar
+        delete_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png")), size=(20, 20)
+        )
         self.btn_delete = ctk.CTkButton(
-            self.btn_container, text="🗑️", width=38, height=38, corner_radius=19,
-            fg_color="#e74c3c", text_color="white", hover_color="#c0392b",
-            font=("Segoe UI Emoji", 15), 
-            command=on_delete,
-            border_width=0
+            self.btn_container, text="", image=delete_img, width=38, height=38, corner_radius=19,
+            fg_color="#e74c3c", hover_color="#c0392b",
+            command=on_delete, border_width=2, border_color="white"
         )
         self.btn_delete.pack(side="right", padx=5)
-
+ 
         # Botón Editar
+        edit_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(20, 20)
+        )
         self.btn_edit = ctk.CTkButton(
-            self.btn_container, text="✏️", width=38, height=38, corner_radius=19,
-            fg_color="#f39c12", text_color="white", hover_color="#e67e22",
-            font=("Segoe UI Emoji", 15),
-            command=on_edit,
-            border_width=0
+            self.btn_container, text="", image=edit_img, width=38, height=38, corner_radius=19,
+            fg_color="#f39c12", hover_color="#e67e22",
+            command=on_edit, border_width=2, border_color="white"
         )
         self.btn_edit.pack(side="right", padx=5)
-
+ 
         # Botón Restablecer password
+        reset_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(20, 20)
+        )
         self.btn_reset = ctk.CTkButton(
-            self.btn_container, text="🔄", width=38, height=38, corner_radius=19,
-            fg_color="#1abc9c", text_color="white", hover_color="#16a085",
-            font=("Segoe UI Emoji", 15),
-            command=on_reset,
-            border_width=0
+            self.btn_container, text="", image=reset_img, width=38, height=38, corner_radius=19,
+            fg_color="#1abc9c", hover_color="#16a085",
+            command=on_reset, border_width=2, border_color="white"
         )
         self.btn_reset.pack(side="right", padx=5)
 
@@ -142,9 +150,13 @@ class UsuariosFrame(ctk.CTkFrame):
         self.right_container.grid(row=0, column=2, sticky="nsew", padx=20, pady=20)
         
         # Botón agregar usuario
+        add_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+        )
         self.btn_add_user = ctk.CTkButton(
             self.right_container, 
-            text="➕ Agregar Usuario", 
+            text=" Agregar Usuario", 
+            image=add_img,
             font=("Arial", 16, "bold"),
             fg_color="#186ccf",
             hover_color="#145cb3",
@@ -185,7 +197,10 @@ class UsuariosFrame(ctk.CTkFrame):
         if not users:
             empty_container = ctk.CTkFrame(self.cards_scroll, fg_color="transparent")
             empty_container.pack(fill="both", expand=True, pady=100)
-            lbl_empty_icon = ctk.CTkLabel(empty_container, text="👤", font=("Arial", 120), text_color="#d0d0d0")
+            show_img = ctk.CTkImage(
+                Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(100, 100)
+            )
+            lbl_empty_icon = ctk.CTkLabel(empty_container, text="", image=show_img)
             lbl_empty_icon.pack()
             lbl_empty_text = ctk.CTkLabel(empty_container, text="No hay Usuarios registrados", font=("Arial", 22, "bold"), text_color="#95a5a6")
             lbl_empty_text.pack(pady=20)

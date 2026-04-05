@@ -6,6 +6,11 @@ from interfaces.windows.unidad.create_unidad import CreateUnidadModal
 from interfaces.windows.unidad.edit_unidad import EditUnidadModal
 from interfaces.windows.unidad.delete_unidad import DeleteUnidadModal
 
+# Directorio de iconos de botones
+_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
+))
+
 class UnidadItem(ctk.CTkFrame):
     """Componente que representa un Círculo con Icono y Nombre debajo."""
     def __init__(self, master, title, icon_path, bg_color, hover_color, on_edit=None, on_delete=None):
@@ -41,16 +46,24 @@ class UnidadItem(ctk.CTkFrame):
         self.lbl_name.pack()
 
         # 4. Botones de Acción
+        # Icono Editar
+        edit_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(22, 22)
+        )
         self.btn_edit = ctk.CTkButton(
-            self.circle_btn, text="✏️", width=45, height=45, corner_radius=12,
-            fg_color="#f39c12", hover_color="#e67e22", font=("Segoe UI Emoji", 22),
+            self.circle_btn, text="", image=edit_img, width=40, height=40, corner_radius=12,
+            fg_color="#f39c12", hover_color="#e67e22", 
             command=on_edit, border_width=2, border_color="white"
         )
         self.btn_edit.place(relx=0.15, rely=0.18, anchor="center")
 
+        # Icono Eliminar
+        delete_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png")), size=(22, 22)
+        )
         self.btn_delete = ctk.CTkButton(
-            self.circle_btn, text="🗑️", width=45, height=45, corner_radius=12,
-            fg_color="#e74c3c", hover_color="#c0392b", font=("Segoe UI Emoji", 22),
+            self.circle_btn, text="", image=delete_img, width=40, height=40, corner_radius=12,
+            fg_color="#e74c3c", hover_color="#c0392b",
             command=on_delete, border_width=2, border_color="white"
         )
         self.btn_delete.place(relx=0.85, rely=0.18, anchor="center")
@@ -89,8 +102,11 @@ class UnidadFrame(ctk.CTkFrame):
         )
         self.lbl_title.pack(side="left")
 
+        add_img = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+        )
         self.btn_add = ctk.CTkButton(
-            self.header, text="➕ Agregar Unidad", width=160, height=45,
+            self.header, text=" Agregar Unidad", image=add_img, width=180, height=45,
             fg_color="#186ccf", hover_color="#145cb3",
             font=("Arial", 15, "bold"), corner_radius=10,
             command=self.on_add_unit
@@ -132,11 +148,14 @@ class UnidadFrame(ctk.CTkFrame):
             empty_frame = ctk.CTkFrame(self.scroll_container, fg_color="transparent")
             empty_frame.grid(row=0, column=0, columnspan=5, pady=100)
             
-            ctk.CTkLabel(empty_frame, text="🔍", font=("Arial", 80)).pack()
+            show_img = ctk.CTkImage(
+                Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(80, 80)
+            )
+            ctk.CTkLabel(empty_frame, text="", image=show_img).pack()
             ctk.CTkLabel(
                 empty_frame, text="No hay unidades registradas", 
                 font=("Arial", 20, "bold"), text_color="#bdc3c7"
-            ).pack(pady=10)
+            ).pack(pady=20)
         else:
             for i, unit in enumerate(unidades):
                 col = i % 5
