@@ -14,8 +14,9 @@ _BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
 
 
 class InstrumentosFrame(ctk.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, usuario=None, **kwargs):
         super().__init__(master, **kwargs)
+        self.usuario = usuario
         self.configure(fg_color="white", corner_radius=15)
 
         # Paginación
@@ -177,7 +178,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         LegendConservacionModal(self.winfo_toplevel())
 
     def on_add_instrumento(self) -> None:
-        CreateInstrumentoModal(self.winfo_toplevel(), parent_view=self)
+        CreateInstrumentoModal(self.winfo_toplevel(), parent_view=self, usuario=self.usuario)
 
     def on_import_excel(self) -> None:
         from interfaces.components.mensajes import Alerts

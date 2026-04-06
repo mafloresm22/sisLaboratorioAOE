@@ -283,7 +283,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.views["Usuarios"] = UsuariosFrame(self.main_content)
         
         # --- 5. Vista INVENTARIO ---
-        self.views["Inventario"] = InstrumentosFrame(self.main_content)
+        self.views["Inventario"] = InstrumentosFrame(self.main_content, usuario=self.usuario)
         
         # --- 6. Vista PRÉSTAMOS ---
         pres_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
