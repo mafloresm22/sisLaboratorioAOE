@@ -68,6 +68,26 @@ class InstrumentoService:
         if not conn: return False
         try:
             cursor = conn.cursor()
+            
+            # Verificar si ya existe
+            check_query = """
+                SELECT idInstrumento FROM Instrumento 
+                WHERE modeloInstrumento IS NOT DISTINCT FROM %s 
+                  AND serieInstrumento IS NOT DISTINCT FROM %s 
+                  AND colorInstrumento IS NOT DISTINCT FROM %s 
+                  AND tamanoInstrumento IS NOT DISTINCT FROM %s
+                LIMIT 1
+            """
+            cursor.execute(check_query, (
+                instrumento.modeloInstrumento,
+                instrumento.serieInstrumento,
+                instrumento.colorInstrumento,
+                instrumento.tamanoInstrumento
+            ))
+            
+            if cursor.fetchone():
+                return "exists"
+
             query = """
                 INSERT INTO Instrumento (
                     descripcionInstrumento, cantidadInstrumento, marcaInstrumento, 

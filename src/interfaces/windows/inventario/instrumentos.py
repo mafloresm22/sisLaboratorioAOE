@@ -5,6 +5,7 @@ from utils.excel_importer import ExcelImporter
 from services.instrumentos.instrumentos import InstrumentoService
 from interfaces.windows.inventario.instrumento_tabla import InstrumentoTabla
 from interfaces.windows.inventario.show_estadoConservacion import LegendConservacionModal
+from interfaces.windows.inventario.create_instrumentos import CreateInstrumentoModal
 
 # Directorio de iconos de botones
 _BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
@@ -176,7 +177,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         LegendConservacionModal(self.winfo_toplevel())
 
     def on_add_instrumento(self) -> None:
-        print("Abriendo modal para agregar instrumento...")
+        CreateInstrumentoModal(self.winfo_toplevel(), parent_view=self)
 
     def on_import_excel(self) -> None:
         from interfaces.components.mensajes import Alerts
