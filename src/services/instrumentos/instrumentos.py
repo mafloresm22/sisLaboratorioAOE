@@ -28,7 +28,7 @@ class InstrumentoService:
                     l.nombreLaboratorios
                 FROM Instrumento i
                 LEFT JOIN Laboratorios l ON i.laboratorioId = l.idLaboratorios
-                ORDER BY i.idInstrumento DESC
+                ORDER BY i.idInstrumento ASC
             """
             cursor.execute(query)
             filas = cursor.fetchall()

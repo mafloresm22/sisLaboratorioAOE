@@ -77,6 +77,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         # InstrumentoTabla (tksheet) maneja header + filas + scroll internamente
         self.tabla = InstrumentoTabla(
             container,
+            on_view  =self.handle_view,
             on_edit  =self.handle_edit,
             on_delete=self.handle_delete,
         )
@@ -153,11 +154,28 @@ class InstrumentosFrame(ctk.CTkFrame):
     # ──────────────────────────────────────────────────────────
     # ACCIONES
     # ──────────────────────────────────────────────────────────
+    def handle_view(self, item) -> None:
+        from interfaces.components.mensajes import Alerts
+        msg = f"Detalles: {item.descripcionInstrumento}\nMarca: {item.marcaInstrumento}\nModelo: {item.modeloInstrumento}"
+        Alerts.show_info("Vista de Instrumento", msg, master=self.master)
     def handle_edit(self, item) -> None:
-        print(f"Editando ID {item.idInstrumento}")
+        from interfaces.components.mensajes import Alerts
+        Alerts.show_info("Editar Instrumento", f"Funcionalidad de edición para: {item.descripcionInstrumento}\n(En desarrollo)", master=self.master)
 
     def handle_delete(self, item) -> None:
-        print(f"Eliminando ID {item.idInstrumento}")
+        from interfaces.components.mensajes import Alerts
+        confirm = Alerts.show_question(
+            "Confirmar Eliminación",
+            f"¿Está seguro de eliminar el instrumento?\n'{item.descripcionInstrumento}'",
+            master=self.master
+        )
+        if confirm:
+            if InstrumentoService.delete_instrumento(item.idInstrumento):
+                Alerts.show_success("Eliminado", "El instrumento ha sido eliminado correctamente.", master=self.master)
+                self.all_data = [] # Forzar recarga de DB
+                self.load_data()
+            else:
+                Alerts.show_error("Error", "No se pudo eliminar el instrumento.", master=self.master)
 
     def filter_data(self, _=None) -> None:
         query = self.search_entry.get().lower().strip()
