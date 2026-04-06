@@ -95,8 +95,8 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
 
         ctk.CTkButton(
             self.footer, text="Cancelar",
-            fg_color="transparent", hover_color="#f1f2f6",
-            text_color="#7f8c8d", width=120, height=45, corner_radius=12,
+            fg_color="#f5334d", hover_color="#f5334d",
+            text_color="white", width=120, height=45, corner_radius=12,
             font=("Outfit", 15, "bold"),
             command=self.close_modal
         ).pack(side="right", padx=15, pady=15)
@@ -156,8 +156,12 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         self.entry_color.grid(row=4, column=0, sticky="w", pady=(5, 15), padx=(0, 20))
 
         _label(sec_tech, "Tamaño").grid(row=3, column=1, sticky="w")
-        self.entry_tamano = ctk.CTkEntry(sec_tech, placeholder_text="Ej: Pequeño, Mediano...", width=350, height=45, corner_radius=10, border_width=2)
-        self.entry_tamano.grid(row=4, column=1, sticky="w", pady=(5, 15))
+        self.combo_tamano = ctk.CTkComboBox(
+            sec_tech, values=["Grande", "Mediano", "Pequeño"], 
+            width=350, height=45, corner_radius=10, border_width=2, state="readonly"
+        )
+        self.combo_tamano.grid(row=4, column=1, sticky="w", pady=(5, 15))
+        self.combo_tamano.set("Mediano")
 
         # --- SECCIÓN: UBICACIÓN, UNIDAD Y ESTADO ---
         sec_loc = ctk.CTkFrame(self.scroll_body, fg_color="transparent")
@@ -294,7 +298,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         modelo = self.entry_modelo.get().strip()
         serie = self.entry_serie.get().strip()
         color = self.entry_color.get().strip()
-        tamano = self.entry_tamano.get().strip()
+        tamano = self.combo_tamano.get()
 
         if not descripcion:
             Alerts.show_error("Campo requerido", "La descripción es obligatoria.", master=self)
@@ -306,7 +310,6 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
             Alerts.show_error("Error de Dato", "La cantidad debe ser un número entero.", master=self)
             return
 
-        # Laboratorio → ID y piso del mismo registro
         selected_lab_name = self.combo_lab.get()
         lab_id = None
         piso_auto = None
@@ -353,11 +356,11 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         nuevo_inst = Instrumento(
             descripcionInstrumento=descripcion,
             cantidadInstrumento=cantidad_int,
-            marcaInstrumento=marca or None,
-            modeloInstrumento=modelo or None,
-            serieInstrumento=serie or None,
-            colorInstrumento=color or None,
-            tamanoInstrumento=tamano or None,
+            marcaInstrumento=marca if marca else "...",
+            modeloInstrumento=modelo if modelo else "...",
+            serieInstrumento=serie if serie else "...",
+            colorInstrumento=color if color else "...",
+            tamanoInstrumento=tamano if tamano else "...",
             pisoInstrumento=piso_auto,
             idEstadoCons=estado_id,
             usuarioId=usuario_id,
