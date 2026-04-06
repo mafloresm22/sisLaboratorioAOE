@@ -6,6 +6,7 @@ from services.instrumentos.instrumentos import InstrumentoService
 from interfaces.windows.inventario.instrumento_tabla import InstrumentoTabla
 from interfaces.windows.inventario.show_estadoConservacion import LegendConservacionModal
 from interfaces.windows.inventario.create_instrumentos import CreateInstrumentoModal
+from interfaces.windows.inventario.show_instrumentos import ShowInstrumentoModal
 
 # Directorio de iconos de botones
 _BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
@@ -155,9 +156,7 @@ class InstrumentosFrame(ctk.CTkFrame):
     # ACCIONES
     # ──────────────────────────────────────────────────────────
     def handle_view(self, item) -> None:
-        from interfaces.components.mensajes import Alerts
-        msg = f"Detalles: {item.descripcionInstrumento}\nMarca: {item.marcaInstrumento}\nModelo: {item.modeloInstrumento}"
-        Alerts.show_info("Vista de Instrumento", msg, master=self.master)
+        ShowInstrumentoModal(self.winfo_toplevel(), item)
     def handle_edit(self, item) -> None:
         from interfaces.components.mensajes import Alerts
         Alerts.show_info("Editar Instrumento", f"Funcionalidad de edición para: {item.descripcionInstrumento}\n(En desarrollo)", master=self.master)
@@ -172,7 +171,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         if confirm:
             if InstrumentoService.delete_instrumento(item.idInstrumento):
                 Alerts.show_success("Eliminado", "El instrumento ha sido eliminado correctamente.", master=self.master)
-                self.all_data = [] # Forzar recarga de DB
+                self.all_data = []
                 self.load_data()
             else:
                 Alerts.show_error("Error", "No se pudo eliminar el instrumento.", master=self.master)

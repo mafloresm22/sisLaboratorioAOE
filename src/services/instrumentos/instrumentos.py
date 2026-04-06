@@ -1,7 +1,46 @@
 from database.connection import DatabaseConnection
 from models.instrumentos.instrumentos import Instrumento
+import os
+import shutil
+from datetime import datetime
 
 class InstrumentoService:
+    @staticmethod
+    def _save_instrumento_image(source_path):
+        """Copia la imagen a assets/instrumentos y devuelve la ruta relativa guardada."""
+        if not source_path:
+            return source_path
+        
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+        relative_folder = os.path.join("assets", "instrumentos")
+        storage_dir = os.path.join(root_dir, relative_folder)
+        
+        abs_source = os.path.abspath(source_path)
+        if not os.path.isfile(abs_source):
+            abs_source = os.path.join(root_dir, source_path)
+            if not os.path.isfile(abs_source):
+                return source_path
+
+        if os.path.dirname(os.path.abspath(abs_source)) == os.path.abspath(storage_dir):
+            filename = os.path.basename(abs_source)
+            return os.path.join(relative_folder, filename).replace("\\", "/")
+            
+        if not os.path.exists(storage_dir):
+            os.makedirs(storage_dir, exist_ok=True)
+            
+        filename = os.path.basename(abs_source)
+        base, ext = os.path.splitext(filename)
+        base = "".join(x for x in base if x.isalnum() or x in "._- ")[:30].strip().replace(" ", "_")
+        unique_name = f"inst_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{base}{ext}"
+        dest_path = os.path.join(storage_dir, unique_name)
+        
+        try:
+            shutil.copy2(abs_source, dest_path)
+            return os.path.join(relative_folder, unique_name).replace("\\", "/")
+        except Exception as e:
+            print(f"🔴 Error al guardar imagen de instrumento en assets/instrumentos: {e}")
+            return source_path
+
     @staticmethod
     def get_all_instrumentos():
         conn = DatabaseConnection.get_connection()
@@ -110,7 +149,7 @@ class InstrumentoService:
                 instrumento.usuarioId,
                 instrumento.laboratorioId,
                 instrumento.unidadId,
-                instrumento.imagenInstrumento
+                InstrumentoService._save_instrumento_image(instrumento.imagenInstrumento)
             ))
             new_id = cursor.fetchone()[0]
             conn.commit()
@@ -157,7 +196,7 @@ class InstrumentoService:
                 instrumento.usuarioId,
                 instrumento.laboratorioId,
                 instrumento.unidadId,
-                instrumento.imagenInstrumento,
+                InstrumentoService._save_instrumento_image(instrumento.imagenInstrumento),
                 instrumento.idInstrumento
             ))
             conn.commit()

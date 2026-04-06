@@ -150,38 +150,38 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         self.entry_color = ctk.CTkEntry(self.body, placeholder_text="Ej: Negro...", height=38, corner_radius=8, border_width=2)
         self.entry_color.grid(row=4, column=1, sticky="ew", padx=10, pady=(4, 15))
         
-        self.combo_tamano = ctk.CTkComboBox(self.body, values=["Grande", "Mediano", "Pequeño"], height=38, corner_radius=8, border_width=2, state="readonly")
+        self.combo_tamano = ctk.CTkComboBox(self.body, values=["Seleccionar Opción", "Grande", "Mediano", "Pequeño"], height=38, corner_radius=8, border_width=2, state="readonly")
         self.combo_tamano.grid(row=4, column=2, sticky="ew", padx=10, pady=(4, 15))
-        self.combo_tamano.set("Mediano")
+        self.combo_tamano.set("Seleccionar Opción")
 
         # Fila 3: Laboratorio, Unidad, Estado (LOS TRES EN LA MISMA FILA)
         self._label(self.body, "Laboratorio").grid(row=5, column=0, sticky="w", padx=5)
         self._label(self.body, "Unidad de Medida").grid(row=5, column=1, sticky="w", padx=5)
         self._label(self.body, "Estado Conser.").grid(row=5, column=2, sticky="w", padx=5)
         
-        self.labs_data = LaboratorioService.get_all_laboratorios()
-        lab_names = [lab.nombreLaboratorios for lab in self.labs_data] if self.labs_data else []
+        self.labs_data = [lab for lab in LaboratorioService.get_all_laboratorios() if getattr(lab, 'estadoLaboratorios', '').lower() == 'disponible']
+        lab_names = ["Seleccionar Opción"] + [lab.nombreLaboratorios for lab in self.labs_data]
         self.combo_lab = ctk.CTkComboBox(self.body, values=lab_names, height=38, corner_radius=8, border_width=2, state="readonly", command=self._on_lab_changed)
         self.combo_lab.grid(row=6, column=0, sticky="ew", padx=10, pady=(4, 0))
+        self.combo_lab.set("Seleccionar Opción")
         
         self.unidades_data = UnidadService.get_all_unidades()
-        unidad_names = [u.nombreUnidad for u in self.unidades_data] if self.unidades_data else []
+        unidad_names = ["Seleccionar Opción"] + [u.nombreUnidad for u in self.unidades_data]
         self.combo_unidad = ctk.CTkComboBox(self.body, values=unidad_names, height=38, corner_radius=8, border_width=2, state="readonly")
         self.combo_unidad.grid(row=6, column=1, sticky="ew", padx=10, pady=(4, 0))
+        self.combo_unidad.set("Seleccionar Opción")
         
         self.estados_data = self._load_estados_from_db()
-        estado_names = [e["nombre"] for e in self.estados_data]
+        estado_names = ["Seleccionar Opción"] + [e["nombre"] for e in self.estados_data]
         self.combo_estado = ctk.CTkComboBox(self.body, values=estado_names, height=38, corner_radius=8, border_width=2, state="readonly")
         self.combo_estado.grid(row=6, column=2, sticky="ew", padx=10, pady=(4, 0))
+        self.combo_estado.set("Seleccionar Opción")
 
         self.lbl_piso_info = ctk.CTkLabel(self.body, text="", font=("Outfit", 12, "italic"), text_color="#95a5a6", anchor="w")
         self.lbl_piso_info.grid(row=7, column=0, sticky="w", padx=15, pady=(2, 0))
 
-        # Valores por defecto
-        if lab_names: 
-            self.combo_lab.set(lab_names[0])
-            self._on_lab_changed(lab_names[0])
-        if unidad_names: self.combo_unidad.set(unidad_names[0])
+        # Inicializar con valores por defecto
+        self.lbl_piso_info.configure(text="📍 Seleccione un laboratorio")
 
         # --- COLUMNA DERECHA: FOTO ---
         f_foto = ctk.CTkFrame(self.body, fg_color="#f8f9fa", corner_radius=15, border_width=1, border_color="#ecf0f1")
@@ -234,6 +234,10 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
             if conn: conn.close()
 
     def _on_lab_changed(self, selected_name):
+        if selected_name == "Seleccionar Opción":
+            self.lbl_piso_info.configure(text="📍 Seleccione un laboratorio")
+            return
+            
         for lab in self.labs_data:
             if lab.nombreLaboratorios == selected_name:
                 piso = lab.pisoLaboratorios or "—"
@@ -262,9 +266,14 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         unidad_id = next((u.idUnidad for u in self.unidades_data if u.nombreUnidad == unidad_name), None)
         estado_id = next((e["id"] for e in self.estados_data if e["nombre"] == estado_name), None)
         usuario_id = self.usuario.get("idUsuarios") if self.usuario else None
+        tamano = self.combo_tamano.get()
+
+        if any(v == "Seleccionar Opción" for v in [lab_name, unidad_name, estado_name, tamano]):
+            Alerts.show_error("Campos requeridos", "Por favor, seleccione una opción válida en todos los campos desplegables.", master=self)
+            return
 
         if not all([lab_id, unidad_id, estado_id, usuario_id]):
-            Alerts.show_error("Error", "Información incompleta.", master=self)
+            Alerts.show_error("Error", "Información de sistema incompleta o inválida.", master=self)
             return
 
         nuevo = Instrumento(
@@ -274,7 +283,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
             modeloInstrumento=self.entry_modelo.get().strip() or "...",
             serieInstrumento=self.entry_serie.get().strip() or "...",
             colorInstrumento=self.entry_color.get().strip() or "...",
-            tamanoInstrumento=self.combo_tamano.get(),
+            tamanoInstrumento=tamano,
             pisoInstrumento=piso,
             idEstadoCons=estado_id,
             usuarioId=usuario_id,
