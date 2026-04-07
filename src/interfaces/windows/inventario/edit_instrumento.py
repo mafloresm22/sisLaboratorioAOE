@@ -115,7 +115,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
         self.body.grid_columnconfigure(0, weight=1)
         self.body.grid_columnconfigure(1, weight=1)
         self.body.grid_columnconfigure(2, weight=1)
-        self.body.grid_columnconfigure(3, weight=0, minsize=260)
+        self.body.grid_columnconfigure(3, weight=0, minsize=210)
 
         # --- SECCIÓN DATOS ---
         f_desc = ctk.CTkFrame(self.body, fg_color="transparent")
@@ -178,7 +178,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
         
         self._label(f_foto, "Imagen del Instrumento").pack(pady=(15, 10))
         
-        self.photo_preview = ctk.CTkLabel(f_foto, text="Previsualización", width=220, height=220, fg_color="#e0e0e0", corner_radius=10, text_color="#7f8c8d")
+        self.photo_preview = ctk.CTkLabel(f_foto, text="Previsualización", width=180, height=180, fg_color="#e0e0e0", corner_radius=10, text_color="#7f8c8d")
         self.photo_preview.pack(padx=15, pady=10)
         
         ctk.CTkButton(
@@ -192,7 +192,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
     def _load_instrumento_data(self):
         # Texto
         self.entry_descripcion.insert("1.0", self.instrumento.descripcionInstrumento or "")
-        self.entry_cantidad.insert(0, str(self.instrumento.cantidadInstrumento))
+        self.entry_cantidad.insert(0, f"{self.instrumento.cantidadInstrumento:g}")
         self.entry_marca.insert(0, self.instrumento.marcaInstrumento or "")
         self.entry_modelo.insert(0, self.instrumento.modeloInstrumento or "")
         self.entry_serie.insert(0, self.instrumento.serieInstrumento or "")
@@ -223,7 +223,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
             
             if os.path.exists(full_path):
                 img = Image.open(full_path)
-                preview = ctk.CTkImage(img, size=(210, 210))
+                preview = ctk.CTkImage(img, size=(180, 180))
                 self.photo_preview.configure(text="", image=preview)
                 self.lbl_photo_name.configure(text=os.path.basename(path))
         except Exception as e:
@@ -240,7 +240,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
             self.lbl_photo_name.configure(text=f"Nueva: {os.path.basename(path)}")
             try:
                 img = Image.open(path)
-                preview = ctk.CTkImage(img, size=(210, 210))
+                preview = ctk.CTkImage(img, size=(180, 180))
                 self.photo_preview.configure(text="", image=preview)
             except: pass
 
@@ -274,7 +274,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
             return
 
         try:
-            cant_int = int(cant) if cant else 0
+            cant_val = float(cant) if cant else 0.0
         except:
             Alerts.show_error("Error", "La cantidad debe ser numérica.", master=self)
             return
@@ -292,7 +292,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
 
         # Actualizar objeto modelo
         self.instrumento.descripcionInstrumento = desc
-        self.instrumento.cantidadInstrumento = cant_int
+        self.instrumento.cantidadInstrumento = cant_val
         self.instrumento.marcaInstrumento = self.entry_marca.get().strip() or "..."
         self.instrumento.modeloInstrumento = self.entry_modelo.get().strip() or "..."
         self.instrumento.serieInstrumento = self.entry_serie.get().strip() or "..."

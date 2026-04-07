@@ -87,9 +87,9 @@ class ExcelImporter:
                     # CANTIDAD
                     cantidad_raw = row.get(col_cant, 0)
                     try: 
-                        cantidad = int(float(cantidad_raw)) if pd.notna(cantidad_raw) else 0
+                        cantidad = float(cantidad_raw) if pd.notna(cantidad_raw) else 0.0
                     except: 
-                        cantidad = 0
+                        cantidad = 0.0
                     
                     def get_exact_val(col_name):
                         val = row.get(col_name)

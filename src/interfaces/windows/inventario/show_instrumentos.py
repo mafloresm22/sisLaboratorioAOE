@@ -68,8 +68,8 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
         self.body = ctk.CTkFrame(self.container, fg_color="white")
         self.body.pack(fill="both", expand=True, padx=35, pady=25)
         
-        self.body.grid_columnconfigure(0, weight=0, minsize=320) # Foto (como DNI)
-        self.body.grid_columnconfigure(1, weight=1)              # Datos
+        self.body.grid_columnconfigure(0, weight=0, minsize=300) 
+        self.body.grid_columnconfigure(1, weight=1)
         self.body.grid_rowconfigure(0, weight=1)
 
         # --- COLUMNA IZQUIERDA: TARJETA FOTO ---
@@ -81,7 +81,7 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
                     font=("Courier New", 12, "bold"), text_color="#7f8c8d").place(relx=0.05, rely=0.05)
         
         # Previsualización Imagen
-        self.photo_label = ctk.CTkLabel(f_dni_photo, text="SIN IMAGEN", width=280, height=280, 
+        self.photo_label = ctk.CTkLabel(f_dni_photo, text="SIN IMAGEN", width=260, height=260, 
                                         fg_color="#f1f2f6", corner_radius=15, text_color="#bdc3c7", font=("Outfit", 14, "bold"))
         self.photo_label.pack(padx=20, pady=(45, 15))
         
@@ -117,7 +117,7 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
         self._add_field(f_grid, "SERIE", instrumento.serieInstrumento, 1, 0)
         self._add_field(f_grid, "COLOR", instrumento.colorInstrumento, 1, 1)
         self._add_field(f_grid, "TAMAÑO", instrumento.tamanoInstrumento, 2, 0)
-        self._add_field(f_grid, "CANTIDAD", f"{instrumento.cantidadInstrumento} {getattr(instrumento, 'nombre_unidad', 'Unidades')}", 2, 1)
+        self._add_field(f_grid, "CANTIDAD", f"{instrumento.cantidadInstrumento:g} {getattr(instrumento, 'nombre_unidad', 'Unidades')}", 2, 1)
         self._add_field(f_grid, "UBICACIÓN", getattr(instrumento, 'nombre_laboratorio', 'No asignado'), 3, 0)
         self._add_field(f_grid, "PISO", f"Nivel {instrumento.pisoInstrumento or '—'}", 3, 1)
         self._add_field(f_grid, "ESTADO ACTUAL", (instrumento.estado or "DISPONIBLE").upper(), 4, 0, color="#27ae60")
@@ -157,15 +157,12 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
             
             if os.path.exists(full_path):
                 img = Image.open(full_path)
-                # Mantener proporción o recortar?
-                # Para "DNI" suele ser un encuadre cuadrado o 4:3
-                ctk_img = ctk.CTkImage(img, size=(280, 280))
+                ctk_img = ctk.CTkImage(img, size=(260, 260))
                 self.photo_label.configure(text="", image=ctk_img)
             else:
-                # Si falló la ruta relativa, intentar como absoluta
                 if os.path.exists(self.instrumento.imagenInstrumento):
                     img = Image.open(self.instrumento.imagenInstrumento)
-                    ctk_img = ctk.CTkImage(img, size=(280, 280))
+                    ctk_img = ctk.CTkImage(img, size=(260, 260))
                     self.photo_label.configure(text="", image=ctk_img)
         except Exception as e:
             print(f"Error cargando imagen en detalle: {e}")

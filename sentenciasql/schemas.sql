@@ -33,7 +33,7 @@ CREATE TABLE Instrumento (
     idInstrumento SERIAL PRIMARY KEY,
     nombreInstrumento VARCHAR(150) NOT NULL,
     descripcionInstrumento TEXT,
-    cantidadInstrumento INTEGER DEFAULT 0,
+    cantidadInstrumento DOUBLE PRECISION DEFAULT 0,
     marcaInstrumento VARCHAR(100),
     modeloInstrumento VARCHAR(100),
     serieInstrumento VARCHAR(100),

@@ -114,7 +114,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         self.body.grid_columnconfigure(0, weight=1)
         self.body.grid_columnconfigure(1, weight=1)
         self.body.grid_columnconfigure(2, weight=1)
-        self.body.grid_columnconfigure(3, weight=0, minsize=260)
+        self.body.grid_columnconfigure(3, weight=0, minsize=210)
 
         # --- SECCIÓN DATOS ---
         
@@ -189,7 +189,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
         
         self._label(f_foto, "Imagen del Instrumento").pack(pady=(15, 10))
         
-        self.photo_preview = ctk.CTkLabel(f_foto, text="Previsualización", width=220, height=220, fg_color="#e0e0e0", corner_radius=10, text_color="#7f8c8d")
+        self.photo_preview = ctk.CTkLabel(f_foto, text="Previsualización", width=180, height=180, fg_color="#e0e0e0", corner_radius=10, text_color="#7f8c8d")
         self.photo_preview.pack(padx=15, pady=10)
         
         ctk.CTkButton(
@@ -217,7 +217,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
             self.lbl_photo_name.configure(text=f"Seleccionado: {os.path.basename(path)}")
             try:
                 img = Image.open(path)
-                preview = ctk.CTkImage(img, size=(210, 210))
+                preview = ctk.CTkImage(img, size=(180, 180))
                 self.photo_preview.configure(text="", image=preview)
             except Exception as e:
                 print(f"Error cargando preview: {e}")
@@ -256,7 +256,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
             return
 
         try:
-            cant_int = int(cant) if cant else 0
+            cant_val = float(cant) if cant else 0.0
         except:
             Alerts.show_error("Error", "La cantidad debe ser numérica.", master=self)
             return
@@ -278,7 +278,7 @@ class CreateInstrumentoModal(ctk.CTkToplevel):
 
         nuevo = Instrumento(
             descripcionInstrumento=desc,
-            cantidadInstrumento=cant_int,
+            cantidadInstrumento=cant_val,
             marcaInstrumento=self.entry_marca.get().strip() or "...",
             modeloInstrumento=self.entry_modelo.get().strip() or "...",
             serieInstrumento=self.entry_serie.get().strip() or "...",

@@ -141,7 +141,7 @@ class InstrumentoTabla(ctk.CTkFrame):
         return [
             str(item.idInstrumento).zfill(2),
             item.descripcionInstrumento or "Sin descripción",
-            f"{item.cantidadInstrumento} {getattr(item, 'nombre_unidad', 'und.')}",
+            f"{item.cantidadInstrumento:g} {getattr(item, 'nombre_unidad', 'und.')}",
             item.marcaInstrumento  or "—",
             item.modeloInstrumento or "—",
             item.serieInstrumento  or "—",
