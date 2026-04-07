@@ -117,14 +117,24 @@ class ExcelImporter:
                     laboratorio_id = 1
                     
                     if ubicacion:
+                        # Limpiar la ubicacion del excel para la comparacion:
+                        # 1. Normalizar eliminando tildes
+                        # 2. Quitar espacios intermedios para comparar "Lab.Física" con "Lab. Biología"
+                        ubi_clean = normalize_text(ubicacion).replace(" ", "")
+                        
                         cursor.execute("""
-                            SELECT idLaboratorios FROM Laboratorios 
-                            WHERE nombreLaboratorios ILIKE %s OR %s ILIKE CONCAT('%%', nombreLaboratorios, '%%')
-                            LIMIT 1
-                        """, (f"%{ubicacion}%", ubicacion))
-                        lab_result = cursor.fetchone()
-                        if lab_result:
-                            laboratorio_id = lab_result[0]
+                            SELECT idLaboratorios, nombreLaboratorios FROM Laboratorios 
+                        """)
+                        db_labs = cursor.fetchall()
+                        
+                        for id_lab, nom_lab in db_labs:
+                            # Comparamos ignorando mayúsculas, acentos y espacios
+                            nom_lab_clean = normalize_text(nom_lab).replace(" ", "")
+                            
+                            # Si la ubicación del excel contiene o es el nombre del lab de la BD
+                            if ubi_clean in nom_lab_clean or nom_lab_clean in ubi_clean:
+                                laboratorio_id = id_lab
+                                break
                     
                     # Inserción
                     cursor.execute("""

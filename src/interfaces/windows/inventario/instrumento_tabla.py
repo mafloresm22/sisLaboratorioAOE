@@ -128,6 +128,7 @@ class InstrumentoTabla(ctk.CTkFrame):
         for i, item in enumerate(items):
             row_bg = _ROW_COLORS[i % 2]
             self.sheet.highlight_rows(i, bg=row_bg, redraw=False)
+            
             fg = _CONSERV_FG.get(getattr(item, "idEstadoCons", 0), "#7f8c8d")
             self.sheet.highlight_cells(row=i, column=_CONS_COL, bg=row_bg, fg=fg, redraw=False)
 
