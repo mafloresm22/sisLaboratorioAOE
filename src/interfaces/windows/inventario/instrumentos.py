@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from utils.excel_importer import ExcelImporter
 from services.instrumentos.instrumentos import InstrumentoService
+from services.laboratorios.laboratorios import LaboratorioService
 from interfaces.windows.inventario.instrumento_tabla import InstrumentoTabla
 from interfaces.windows.inventario.show_estadoConservacion import LegendConservacionModal
 from interfaces.windows.inventario.create_instrumentos import CreateInstrumentoModal
@@ -25,6 +26,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         self.items_per_page = 30
         self.all_data       = []
         self.filtered_data  = []
+        self.laboratorios   = []
 
         # Layout
         self.grid_columnconfigure(0, weight=1)
@@ -51,12 +53,33 @@ class InstrumentosFrame(ctk.CTkFrame):
         actions.pack(side="right")
 
         self.search_entry = ctk.CTkEntry(
-            actions, placeholder_text="🔍 Buscar instrumento...",
-            width=300, height=40, font=("Arial", 13),
+            actions, placeholder_text="Buscar instrumento...",
+            width=250, height=40, font=("Arial", 13),
             border_color="#d1d8e0", corner_radius=10,
         )
-        self.search_entry.pack(side="left", padx=(0, 15))
+        self.search_entry.pack(side="left", padx=(0, 10))
         self.search_entry.bind("<KeyRelease>", self.filter_data)
+        self.search_entry.bind("<Return>", self.filter_data)
+
+        # Filtrar por Laboratorio
+        try:
+            self.laboratorios = LaboratorioService.get_all_laboratorios()
+            lab_names = ["Todos los Laboratorios"] + [
+                l.nombreLaboratorios for l in self.laboratorios 
+                if (l.estadoLaboratorios or "").lower() == "disponible"
+            ]
+        except:
+            lab_names = ["Todos los Laboratorios"]
+
+        self.filter_lab_var = ctk.StringVar(value="Todos los Laboratorios")
+        self.filter_lab_menu = ctk.CTkOptionMenu(
+            actions, values=lab_names, variable=self.filter_lab_var,
+            width=200, height=40, corner_radius=10,
+            fg_color="#34495e", button_color="#2c3e50", button_hover_color="#1a252f",
+            dropdown_font=("Arial", 12), font=("Arial", 13, "bold"),
+            command=lambda _: self.filter_data()
+        )
+        self.filter_lab_menu.pack(side="left", padx=(0, 15))
 
         def _btn(text, color, hover, cmd, icon_name, w=150):
             img_path = os.path.join(_BUTTON_ICONS_DIR, icon_name)
@@ -68,7 +91,7 @@ class InstrumentosFrame(ctk.CTkFrame):
             )
 
         _btn(" Ver Leyenda",       "#3498db", "#2980b9", self.on_show_legend,    "show_8358982.png"  ).pack(side="left", padx=(0, 10))
-        _btn(" Importar Excel",    "#8e44ad", "#732d91", self.on_import_excel,   "other_12283713.png", w=160).pack(side="left", padx=(0, 10))
+        _btn(" Importar Excel",    "#f54977", "#d11a42", self.on_import_excel,   "other_12283713.png", w=160).pack(side="left", padx=(0, 10))
         _btn(" Agregar Instrumento", "#27ae60", "#219150", self.on_add_instrumento,"add_6902311.png",  w=190).pack(side="left")
 
     def _build_table(self) -> None:
@@ -178,16 +201,25 @@ class InstrumentosFrame(ctk.CTkFrame):
 
     def filter_data(self, _=None) -> None:
         query = self.search_entry.get().lower().strip()
-        if not query:
-            self.filtered_data = list(self.all_data)
-        else:
-            self.filtered_data = [
-                it for it in self.all_data
+        selected_lab = self.filter_lab_var.get()
+
+        data = self.all_data
+
+        # Filtrar por Laboratorio
+        if selected_lab != "Todos los Laboratorios":
+            data = [it for it in data if it.nombre_laboratorio == selected_lab]
+
+        # Filtrar por Texto
+        if query:
+            data = [
+                it for it in data
                 if query in (it.descripcionInstrumento or "").lower()
                 or query in (it.marcaInstrumento       or "").lower()
                 or query in (it.modeloInstrumento      or "").lower()
                 or query in (it.serieInstrumento       or "").lower()
             ]
+
+        self.filtered_data = data
         self.current_page = 1
         self.load_data()
 
