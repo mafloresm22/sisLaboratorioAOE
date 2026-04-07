@@ -64,9 +64,11 @@ class InstrumentoService:
                     i.unidadId,
                     i.imagenInstrumento, 
                     i.estado, 
-                    l.nombreLaboratorios
+                    l.nombreLaboratorios,
+                    u.nombreUnidad
                 FROM Instrumento i
                 LEFT JOIN Laboratorios l ON i.laboratorioId = l.idLaboratorios
+                LEFT JOIN Unidad u ON i.unidadId = u.idUnidad
                 ORDER BY i.idInstrumento ASC
             """
             cursor.execute(query)
@@ -91,8 +93,9 @@ class InstrumentoService:
                     imagenInstrumento=fila[13],
                     estado=fila[14]
                 )
-                # Atributo extra para la UI
+
                 inst.nombre_laboratorio = fila[15]
+                inst.nombre_unidad = fila[16]
                 instrumentos.append(inst)
             return instrumentos
         except Exception as e:

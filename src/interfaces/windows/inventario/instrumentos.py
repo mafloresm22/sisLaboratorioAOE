@@ -7,11 +7,15 @@ from services.laboratorios.laboratorios import LaboratorioService
 from interfaces.windows.inventario.instrumento_tabla import InstrumentoTabla
 from interfaces.windows.inventario.show_estadoConservacion import LegendConservacionModal
 from interfaces.windows.inventario.create_instrumentos import CreateInstrumentoModal
+from interfaces.windows.inventario.edit_instrumento import EditInstrumentoModal
 from interfaces.windows.inventario.show_instrumentos import ShowInstrumentoModal
 
 # Directorio de iconos de botones
 _BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
+))
+_UNIDAD_IMG_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "unidad_img"
 ))
 
 
@@ -35,6 +39,15 @@ class InstrumentosFrame(ctk.CTkFrame):
         self._build_header()
         self._build_table()
         self._build_pagination()
+        
+        # Iconos para estado vacío
+        self.img_empty_search = ctk.CTkImage(
+            Image.open(os.path.join(_BUTTON_ICONS_DIR, "buscar_8661627.png")), size=(80, 80)
+        )
+        self.img_empty_package = ctk.CTkImage(
+            Image.open(os.path.join(_UNIDAD_IMG_DIR, "package_1274687.png")), size=(80, 80)
+        )
+
         self.load_data()
 
     # ──────────────────────────────────────────────────────────
@@ -98,7 +111,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         container = ctk.CTkFrame(self, fg_color="transparent")
         container.grid(row=1, column=0, sticky="nsew", padx=25, pady=(0, 10))
 
-        # InstrumentoTabla (tksheet) maneja header + filas + scroll internamente
+        # InstrumentoTabla  
         self.tabla = InstrumentoTabla(
             container,
             on_view  =self.handle_view,
@@ -106,6 +119,23 @@ class InstrumentosFrame(ctk.CTkFrame):
             on_delete=self.handle_delete,
         )
         self.tabla.pack(fill="both", expand=True)
+        
+        # Label para estado vacío
+        self.no_results_container = ctk.CTkFrame(container, fg_color="white", corner_radius=15)
+        
+        self.no_results_icon = ctk.CTkLabel(
+            self.no_results_container, text="",
+        )
+        self.no_results_icon.pack(pady=(80, 10))
+
+        self.no_results_label = ctk.CTkLabel(
+            self.no_results_container, 
+            text="No hay Instrumentos registrados",
+            font=("Arial", 22, "bold"), 
+            text_color="#7f8c8d"
+        )
+        self.no_results_label.pack(pady=(10, 80))
+
 
     def _build_pagination(self) -> None:
         pag = ctk.CTkFrame(self, fg_color="transparent")
@@ -118,7 +148,7 @@ class InstrumentosFrame(ctk.CTkFrame):
                 fg_color="#34495e", hover_color="#2c3e50", command=cmd,
             )
 
-        self.btn_prev = _pbtn("◀ Anterior", self.prev_page)
+        self.btn_prev = _pbtn("Anterior", self.prev_page)
         self.btn_prev.pack(side="left", padx=5)
 
         self.lbl_pageinfo = ctk.CTkLabel(
@@ -127,7 +157,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         )
         self.lbl_pageinfo.pack(side="left", padx=15)
 
-        self.btn_next = _pbtn("Siguiente ▶", self.next_page)
+        self.btn_next = _pbtn("Siguiente", self.next_page)
         self.btn_next.pack(side="left", padx=5)
 
         self.lbl_total_records = ctk.CTkLabel(
@@ -153,12 +183,26 @@ class InstrumentosFrame(ctk.CTkFrame):
 
         # Estado vacío
         if not self.filtered_data:
-            self.tabla.populate([])
+            self.tabla.pack_forget()
+            # Determinar mensaje
+            if not self.all_data:
+                self.no_results_label.configure(text="No hay Instrumentos registrados")
+                self.no_results_icon.configure(image=self.img_empty_package)
+            else:
+                self.no_results_label.configure(text="No se encontraron resultados para su búsqueda")
+                self.no_results_icon.configure(image=self.img_empty_search)
+
+            self.no_results_container.pack(fill="both", expand=True)
+            
             self.lbl_pageinfo.configure(text="Página 0 de 0")
             self.lbl_total_records.configure(text="Total: 0 instrumentos registrados")
             self.btn_prev.configure(state="disabled", fg_color="#95a5a6")
             self.btn_next.configure(state="disabled", fg_color="#95a5a6")
             return
+
+        # Mostrar tabla si hay datos
+        self.no_results_container.pack_forget()
+        self.tabla.pack(fill="both", expand=True)
 
         # Actualizar controles
         self.lbl_pageinfo.configure(text=f"Página {self.current_page} de {total_pages}")
@@ -172,7 +216,7 @@ class InstrumentosFrame(ctk.CTkFrame):
             fg_color="#34495e" if self.current_page < total_pages else "#95a5a6",
         )
 
-        # Renderizar tabla (instantáneo gracias a tksheet)
+        # Renderizar tabla
         self.tabla.populate(datos)
 
     # ──────────────────────────────────────────────────────────
@@ -181,8 +225,7 @@ class InstrumentosFrame(ctk.CTkFrame):
     def handle_view(self, item) -> None:
         ShowInstrumentoModal(self.winfo_toplevel(), item)
     def handle_edit(self, item) -> None:
-        from interfaces.components.mensajes import Alerts
-        Alerts.show_info("Editar Instrumento", f"Funcionalidad de edición para: {item.descripcionInstrumento}\n(En desarrollo)", master=self.master)
+        EditInstrumentoModal(self.winfo_toplevel(), item, parent_view=self, usuario=self.usuario)
 
     def handle_delete(self, item) -> None:
         from interfaces.components.mensajes import Alerts

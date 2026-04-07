@@ -117,7 +117,7 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
         self._add_field(f_grid, "SERIE", instrumento.serieInstrumento, 1, 0)
         self._add_field(f_grid, "COLOR", instrumento.colorInstrumento, 1, 1)
         self._add_field(f_grid, "TAMAÑO", instrumento.tamanoInstrumento, 2, 0)
-        self._add_field(f_grid, "CANTIDAD", f"{instrumento.cantidadInstrumento} Unidades", 2, 1)
+        self._add_field(f_grid, "CANTIDAD", f"{instrumento.cantidadInstrumento} {getattr(instrumento, 'nombre_unidad', 'Unidades')}", 2, 1)
         self._add_field(f_grid, "UBICACIÓN", getattr(instrumento, 'nombre_laboratorio', 'No asignado'), 3, 0)
         self._add_field(f_grid, "PISO", f"Nivel {instrumento.pisoInstrumento or '—'}", 3, 1)
         self._add_field(f_grid, "ESTADO ACTUAL", (instrumento.estado or "DISPONIBLE").upper(), 4, 0, color="#27ae60")
