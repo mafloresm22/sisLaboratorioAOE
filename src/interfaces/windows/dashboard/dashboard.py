@@ -8,6 +8,7 @@ from interfaces.windows.unidad.unidad import UnidadFrame
 from interfaces.windows.usuarios.usuarios import UsuariosFrame
 from interfaces.windows.laboratorios.laboratorios import LaboratoriosFrame
 from interfaces.windows.inventario.instrumentos import InstrumentosFrame
+from interfaces.windows.prestamos.prestamos import PrestamosFrame
 
 class ModuleCard(ctk.CTkFrame):
     def __init__(self, master, title, icon_path, description, command, color="#186ccf", bg_color="#ffffff", extra_padx=0):
@@ -286,9 +287,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.views["Inventario"] = InstrumentosFrame(self.main_content, usuario=self.usuario)
         
         # --- 6. Vista PRÉSTAMOS ---
-        pres_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-        ctk.CTkLabel(pres_frame, text="Módulo de Préstamos y Devoluciones", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
-        self.views["Préstamos"] = pres_frame
+        self.views["Préstamos"] = PrestamosFrame(self.main_content, usuario=self.usuario)
         
         # --- 7. Vista REPORTES ---
         rep_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
