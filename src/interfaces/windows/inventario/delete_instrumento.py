@@ -22,7 +22,7 @@ class DeleteInstrumentoModal(ctk.CTkToplevel):
         self.update_idletasks()
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        x = (screen_width // 2) - (self.width // 2)
+        x = (screen_width // 2) - (self.width // 2) + 120
         y = (screen_height // 2) - (self.height // 2)
         self.geometry(f"{self.width}x{self.height}+{x}+{y}")
         self.configure(fg_color="white")
