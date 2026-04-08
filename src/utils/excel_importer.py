@@ -6,10 +6,6 @@ from database.connection import DatabaseConnection
 class ExcelImporter:
     @staticmethod
     def importar_instrumentos():
-        """
-        Abre un cuadro de diálogo para seleccionar un archivo Excel e inserta 
-        los datos de TODAS las hojas en la tabla Instrumento.
-        """
         file_path = filedialog.askopenfilename(
             title="Seleccionar archivo Excel",
             filetypes=[("Archivos Excel", "*.xlsx *.xls")]
@@ -40,11 +36,8 @@ class ExcelImporter:
                 if df.empty:
                     continue
 
-                # Normalizar los nombres actuales de las columnas
                 df.columns = [normalize_text(c) for c in df.columns]
 
-                # --- DETECCIÓN INTELIGENTE DE CABECERA ---
-                # Si la columna DESCRIPCION no está en los encabezados, la buscamos en las primeras 10 filas
                 if 'DESCRIPCION' not in df.columns:
                     header_found = False
                     for i in range(min(len(df), 10)):
@@ -55,11 +48,10 @@ class ExcelImporter:
                             header_found = True
                             break
                     if not header_found:
-                        continue # Saltar hoja si no hay cabecera válida
+                        continue
 
                 hojas_procesadas += 1
 
-                # Mapeo de columnas basado exactamente en la imagen proporcionada
                 def find_col(possible_names):
                     for name in possible_names:
                         norm_name = normalize_text(name)
@@ -117,9 +109,6 @@ class ExcelImporter:
                     laboratorio_id = 1
                     
                     if ubicacion:
-                        # Limpiar la ubicacion del excel para la comparacion:
-                        # 1. Normalizar eliminando tildes
-                        # 2. Quitar espacios intermedios para comparar "Lab.Física" con "Lab. Biología"
                         ubi_clean = normalize_text(ubicacion).replace(" ", "")
                         
                         cursor.execute("""
@@ -128,10 +117,8 @@ class ExcelImporter:
                         db_labs = cursor.fetchall()
                         
                         for id_lab, nom_lab in db_labs:
-                            # Comparamos ignorando mayúsculas, acentos y espacios
                             nom_lab_clean = normalize_text(nom_lab).replace(" ", "")
                             
-                            # Si la ubicación del excel contiene o es el nombre del lab de la BD
                             if ubi_clean in nom_lab_clean or nom_lab_clean in ubi_clean:
                                 laboratorio_id = id_lab
                                 break
