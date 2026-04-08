@@ -18,24 +18,28 @@ class DeleteInstrumentoModal(ctk.CTkToplevel):
         self.height = 320
         self.overrideredirect(True)
         
-        # Centrado
+        # Centrado y preparación de animación
         self.update_idletasks()
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-        x = (screen_width // 2) - (self.width // 2) + 120
-        y = (screen_height // 2) - (self.height // 2)
-        self.geometry(f"{self.width}x{self.height}+{x}+{y}")
-        self.configure(fg_color="white")
+        self.target_x = (screen_width // 2) - (self.width // 2) + 120
+        self.target_y = (screen_height // 2) - (self.height // 2)
         
-        # Overlay
+        self.current_y = self.target_y - 80
+        self.geometry(f"{self.width}x{self.height}+{self.target_x}+{int(self.current_y)}")
+        self.attributes("-alpha", 0.0)
+
+        # Overlay con fundido inicial
         self.overlay = ctk.CTkToplevel(self.master)
         self.overlay.withdraw()
         self.overlay.geometry(f"{screen_width}x{screen_height}+0+0")
         self.overlay.overrideredirect(True)
         self.overlay.configure(fg_color="black")
-        self.overlay.attributes("-alpha", 0.4)
+        self.overlay.attributes("-alpha", 0.0)
+        
         self.overlay.deiconify()
         self.deiconify()
+        self.animate_entry()
 
         # Contenedor con borde
         self.container = ctk.CTkFrame(self, fg_color="white", corner_radius=20, border_width=2, border_color="#f5d6d6")
@@ -103,5 +107,38 @@ class DeleteInstrumentoModal(ctk.CTkToplevel):
 
     def close_modal(self):
         self.grab_release()
-        self.overlay.destroy()
-        self.destroy()
+        self.animate_exit()
+
+    def animate_entry(self):
+        try:
+            alpha = float(self.attributes("-alpha"))
+            overlay_alpha = float(self.overlay.attributes("-alpha"))
+            
+            # Aparecer ventana principal
+            if alpha < 1.0: self.attributes("-alpha", min(1.0, alpha + 0.12))
+            
+            # Aparecer overlay suavemente
+            if overlay_alpha < 0.4: self.overlay.attributes("-alpha", min(0.4, overlay_alpha + 0.05))
+            
+            # Deslizamiento con easing
+            if self.current_y < self.target_y:
+                self.current_y += (self.target_y - self.current_y) * 0.15 + 0.5
+                self.geometry(f"+{self.target_x}+{int(self.current_y)}")
+                self.after(8, self.animate_entry)
+            elif alpha < 1.0 or overlay_alpha < 0.4:
+                self.after(8, self.animate_entry)
+        except: pass
+
+    def animate_exit(self):
+        try:
+            alpha = float(self.attributes("-alpha"))
+            if alpha > 0:
+                self.current_y += 15
+                self.attributes("-alpha", max(0, alpha - 0.15))
+                self.overlay.attributes("-alpha", max(0, float(self.overlay.attributes("-alpha")) - 0.08))
+                self.geometry(f"+{self.target_x}+{int(self.current_y)}")
+                self.after(8, self.animate_exit)
+            else:
+                self.overlay.destroy()
+                self.destroy()
+        except: pass

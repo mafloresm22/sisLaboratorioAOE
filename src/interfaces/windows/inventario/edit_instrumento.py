@@ -28,7 +28,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
         self.overlay.geometry(f"{self.overlay.winfo_screenwidth()}x{self.overlay.winfo_screenheight()}+0+0")
         self.overlay.overrideredirect(True)
         self.overlay.configure(fg_color="black")
-        self.overlay.attributes("-alpha", 0.5)
+        self.overlay.attributes("-alpha", 0.0)
 
         # --- MODAL ---
         self.overrideredirect(True)
@@ -321,12 +321,17 @@ class EditInstrumentoModal(ctk.CTkToplevel):
     def animate_entry(self):
         try:
             alpha = float(self.attributes("-alpha"))
+            overlay_alpha = float(self.overlay.attributes("-alpha"))
+
             if alpha < 1.0: self.attributes("-alpha", min(1.0, alpha + 0.12))
+            if overlay_alpha < 0.5: self.overlay.attributes("-alpha", min(0.5, overlay_alpha + 0.05))
+
             if self.current_y < self.target_y:
                 self.current_y += (self.target_y - self.current_y) * 0.15 + 0.5
                 self.geometry(f"+{self.target_x}+{int(self.current_y)}")
                 self.after(8, self.animate_entry)
-            elif alpha < 1.0: self.after(8, self.animate_entry)
+            elif alpha < 1.0 or overlay_alpha < 0.5:
+                self.after(8, self.animate_entry)
         except: pass
 
     def animate_exit(self):
