@@ -9,14 +9,13 @@ from interfaces.windows.inventario.show_estadoConservacion import LegendConserva
 from interfaces.windows.inventario.create_instrumentos import CreateInstrumentoModal
 from interfaces.windows.inventario.edit_instrumento import EditInstrumentoModal
 from interfaces.windows.inventario.show_instrumentos import ShowInstrumentoModal
+from interfaces.windows.inventario.delete_instrumento import DeleteInstrumentoModal
 
-# Directorio de iconos de botones
-_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
-_UNIDAD_IMG_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "unidad_img"
-))
+from utils.paths import get_resource_path
+
+# Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+_BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
+_UNIDAD_IMG_DIR = os.path.join("assets", "icons", "unidad_img")
 
 
 class InstrumentosFrame(ctk.CTkFrame):
@@ -42,10 +41,10 @@ class InstrumentosFrame(ctk.CTkFrame):
         
         # Iconos para estado vacío
         self.img_empty_search = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "buscar_8661627.png")), size=(80, 80)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "buscar_8661627.png"))), size=(80, 80)
         )
         self.img_empty_package = ctk.CTkImage(
-            Image.open(os.path.join(_UNIDAD_IMG_DIR, "package_1274687.png")), size=(80, 80)
+            Image.open(get_resource_path(os.path.join(_UNIDAD_IMG_DIR, "package_1274687.png"))), size=(80, 80)
         )
 
         self.load_data()
@@ -95,7 +94,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         self.filter_lab_menu.pack(side="left", padx=(0, 15))
 
         def _btn(text, color, hover, cmd, icon_name, w=150):
-            img_path = os.path.join(_BUTTON_ICONS_DIR, icon_name)
+            img_path = get_resource_path(os.path.join(_BUTTON_ICONS_DIR, icon_name))
             img = ctk.CTkImage(Image.open(img_path), size=(20, 20))
             return ctk.CTkButton(
                 actions, text=text, image=img, width=w, height=45, corner_radius=10,
@@ -228,19 +227,7 @@ class InstrumentosFrame(ctk.CTkFrame):
         EditInstrumentoModal(self.winfo_toplevel(), item, parent_view=self, usuario=self.usuario)
 
     def handle_delete(self, item) -> None:
-        from interfaces.components.mensajes import Alerts
-        confirm = Alerts.show_question(
-            "Confirmar Eliminación",
-            f"¿Está seguro de eliminar el instrumento?\n'{item.descripcionInstrumento}'",
-            master=self.master
-        )
-        if confirm:
-            if InstrumentoService.delete_instrumento(item.idInstrumento):
-                Alerts.show_success("Eliminado", "El instrumento ha sido eliminado correctamente.", master=self.master)
-                self.all_data = []
-                self.load_data()
-            else:
-                Alerts.show_error("Error", "No se pudo eliminar el instrumento.", master=self.master)
+        DeleteInstrumentoModal(self.winfo_toplevel(), item, parent_view=self)
 
     def filter_data(self, _=None) -> None:
         query = self.search_entry.get().lower().strip()

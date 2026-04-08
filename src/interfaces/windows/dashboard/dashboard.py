@@ -2,6 +2,7 @@ import customtkinter as ctk
 from interfaces.components.mensajes import Alerts
 from PIL import Image
 import os
+from utils.paths import get_resource_path
 from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
 from interfaces.windows.usuarios.usuarios import UsuariosFrame
@@ -16,7 +17,7 @@ class ModuleCard(ctk.CTkFrame):
         self.base_bg = bg_color
         
         try:
-            pil_img = Image.open(icon_path)
+            pil_img = Image.open(get_resource_path(icon_path))
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(60, 60))
             self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
         except Exception:
@@ -83,8 +84,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.logo_frame.grid(row=0, column=0, sticky="w", padx=20, pady=10)
 
         # Cargar imagen del logo AOE
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        img_path_aoe = os.path.join(base_dir, "assets", "img", "AOE_img.jpeg")
+        img_path_aoe = get_resource_path(os.path.join("assets", "img", "AOE_img.jpeg"))
         
         try:
             logo_img = ctk.CTkImage(light_image=Image.open(img_path_aoe), size=(40, 40))
@@ -116,7 +116,7 @@ class DashboardWindow(ctk.CTkToplevel):
         }
         
         # Mapeo de iconos para la Navbar
-        icons_dir = os.path.join(base_dir, "assets", "icons", "dashboard")
+        icons_dir = os.path.join("assets", "icons", "dashboard")
         self.menu_icons = {
             "Módulos": os.path.join(icons_dir, "13051347_roles.png"),
             "Usuarios": os.path.join(icons_dir, "7816987_usuario.png"),
@@ -130,7 +130,7 @@ class DashboardWindow(ctk.CTkToplevel):
             # Intentar cargar icono para el botón
             try:
                 path = self.menu_icons.get(item)
-                icon_img = ctk.CTkImage(light_image=Image.open(path), size=(20, 20)) if path else None
+                icon_img = ctk.CTkImage(light_image=Image.open(get_resource_path(path)), size=(20, 20)) if path else None
             except:
                 icon_img = None
                 
@@ -164,7 +164,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.profile_frame.grid(row=0, column=2, sticky="e", padx=20, pady=10)
         
         # Cargar Avatar del Usuario
-        img_path_user = os.path.join(base_dir, "assets", "img", "user_552721.png")
+        img_path_user = get_resource_path(os.path.join("assets", "img", "user_552721.png"))
         try:
             image_user = Image.open(img_path_user)
             user_avatar = ctk.CTkImage(light_image=image_user, size=(32, 32))
@@ -186,7 +186,7 @@ class DashboardWindow(ctk.CTkToplevel):
         self.lbl_user_role.pack(anchor="w", pady=0)
         
         # Botón de Cerrar Sesión (Icono de Power)
-        img_path_power = os.path.join(base_dir, "assets", "img", "power-button_9734668.png")
+        img_path_power = get_resource_path(os.path.join("assets", "img", "power-button_9734668.png"))
         try:
             image_power = Image.open(img_path_power)
             power_icon = ctk.CTkImage(light_image=image_power, size=(24, 24))
@@ -240,8 +240,8 @@ class DashboardWindow(ctk.CTkToplevel):
         cards_container = ctk.CTkFrame(mod_frame, fg_color="transparent")
         cards_container.pack(pady=20, padx=40, fill="both", expand=True)
         
-        # Crear 4 tarjetas profesionales con iconos profesionales
-        icons_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")), "assets", "icons", "dashboard")
+        # Crear 4 tarjetas
+        icons_dir = os.path.join("assets", "icons", "dashboard")
         
         module_submenus = {
             "Roles": (os.path.join(icons_dir, "13051347_roles.png"), "Gestión de permisos", "#1976d2", "#e3f2fd"), 

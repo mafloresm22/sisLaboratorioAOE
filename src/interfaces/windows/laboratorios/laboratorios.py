@@ -5,11 +5,10 @@ from services.laboratorios.laboratorios import LaboratorioService
 from interfaces.windows.laboratorios.create_lab import CreateLaboratorioModal
 from interfaces.windows.laboratorios.edit_lab import EditLaboratorioModal
 from interfaces.windows.laboratorios.delete_lab import DeleteLaboratorioModal
+from utils.paths import get_resource_path
 
-# Directorio de iconos de botones
-_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+_BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class LaboratorioStatCard(ctk.CTkFrame):
     def __init__(self, master, title, count, color, **kwargs):
@@ -19,7 +18,7 @@ class LaboratorioStatCard(ctk.CTkFrame):
         
         # Icono
         try:
-            icon_path = os.path.join(os.getcwd(), "assets", "icons", "estadisticas", "test-tube_3081698.png")
+            icon_path = get_resource_path(os.path.join("assets", "icons", "estadisticas", "test-tube_3081698.png"))
             img = Image.open(icon_path)
             self.icon_image = ctk.CTkImage(light_image=img, dark_image=img, size=(30, 30))
             self.icon_lbl = ctk.CTkLabel(self, text="", image=self.icon_image)
@@ -66,7 +65,7 @@ class LaboratoriosFrame(ctk.CTkFrame):
         self.lbl_title.pack(side="left")
 
         add_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png"))), size=(20, 20)
         )
         self.btn_add = ctk.CTkButton(
             self.inner_header, text=" Nuevo Laboratorio", image=add_img, width=190, height=45,
@@ -182,7 +181,7 @@ class LaboratoriosFrame(ctk.CTkFrame):
             
             # Icono Editar
             edit_img = ctk.CTkImage(
-                Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(18, 18)
+                Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png"))), size=(18, 18)
             )
             ctk.CTkButton(acts, text="", image=edit_img, width=34, height=34, 
                          fg_color=btn_edit_color, hover_color="#e67e22", 
@@ -192,7 +191,7 @@ class LaboratoriosFrame(ctk.CTkFrame):
             # Botón de Toggle Estado (Basura / Reciclar)
             toggle_path = "delete_2550318.png" if is_active else "show_8358982.png"
             toggle_img = ctk.CTkImage(
-                Image.open(os.path.join(_BUTTON_ICONS_DIR, toggle_path)), size=(18, 18)
+                Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, toggle_path))), size=(18, 18)
             )
             toggle_color = "#ff5c5c" if is_active else "#2ecc71"
             toggle_hover = "#c0392b" if is_active else "#27ae60"
@@ -209,8 +208,9 @@ class LaboratoriosFrame(ctk.CTkFrame):
     def show_empty_state(self):
         empty = ctk.CTkFrame(self.scroll_table, fg_color="transparent")
         empty.pack(pady=80)
+        # Estado vacío
         show_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(80, 80)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png"))), size=(80, 80)
         )
         ctk.CTkLabel(empty, text="", image=show_img).pack()
         ctk.CTkLabel(empty, text="Sin laboratorios registrados", font=("Arial", 16, "bold"), text_color="#bdc3c7").pack(pady=20)

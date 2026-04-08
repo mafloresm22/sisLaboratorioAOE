@@ -1,11 +1,10 @@
 import customtkinter as ctk
 from PIL import Image
 import os
+from utils.paths import get_resource_path, get_storage_path
 
-# Directorio de iconos de botones
-_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos de botones (usando get_resource_path para compatibilidad con .exe)
+_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class ShowInstrumentoModal(ctk.CTkToplevel):
     def __init__(self, master, instrumento, **kwargs):
@@ -50,7 +49,7 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
         self.header.pack_propagate(False)
 
         try:
-            icon_path = os.path.join(_ICONS_DIR, "show_8358982.png")
+            icon_path = get_resource_path(os.path.join(_ICONS_DIR, "show_8358982.png"))
             header_img = ctk.CTkImage(Image.open(icon_path), size=(24, 24))
             ctk.CTkLabel(self.header, text="", image=header_img).pack(side="left", padx=(25, 10))
         except: pass
@@ -68,7 +67,7 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
         self.body = ctk.CTkFrame(self.container, fg_color="white")
         self.body.pack(fill="both", expand=True, padx=35, pady=25)
         
-        self.body.grid_columnconfigure(0, weight=0, minsize=300) 
+        self.body.grid_columnconfigure(0, weight=0, minsize=240) 
         self.body.grid_columnconfigure(1, weight=1)
         self.body.grid_rowconfigure(0, weight=1)
 
@@ -81,9 +80,9 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
                     font=("Courier New", 12, "bold"), text_color="#7f8c8d").place(relx=0.05, rely=0.05)
         
         # Previsualización Imagen
-        self.photo_label = ctk.CTkLabel(f_dni_photo, text="SIN IMAGEN", width=260, height=260, 
+        self.photo_label = ctk.CTkLabel(f_dni_photo, text="SIN IMAGEN", width=200, height=280, 
                                         fg_color="#f1f2f6", corner_radius=15, text_color="#bdc3c7", font=("Outfit", 14, "bold"))
-        self.photo_label.pack(padx=20, pady=(45, 15))
+        self.photo_label.pack(padx=20, pady=(45, 10))
         
         # Intentar cargar imagen
         self._load_instrumento_image()
@@ -151,18 +150,17 @@ class ShowInstrumentoModal(ctk.CTkToplevel):
             return
 
         try:
-            # Resolver path completo
-            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-            full_path = os.path.join(root_dir, self.instrumento.imagenInstrumento)
+            # Intentar cargar desde el almacenamiento persistente
+            full_path = get_storage_path(self.instrumento.imagenInstrumento)
             
             if os.path.exists(full_path):
                 img = Image.open(full_path)
-                ctk_img = ctk.CTkImage(img, size=(260, 260))
+                ctk_img = ctk.CTkImage(img, size=(200, 280))
                 self.photo_label.configure(text="", image=ctk_img)
             else:
                 if os.path.exists(self.instrumento.imagenInstrumento):
                     img = Image.open(self.instrumento.imagenInstrumento)
-                    ctk_img = ctk.CTkImage(img, size=(260, 260))
+                    ctk_img = ctk.CTkImage(img, size=(200, 280))
                     self.photo_label.configure(text="", image=ctk_img)
         except Exception as e:
             print(f"Error cargando imagen en detalle: {e}")

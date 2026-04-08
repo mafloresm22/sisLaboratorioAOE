@@ -5,6 +5,7 @@ from interfaces.windows.roles.create_roles import CreateRoleModal
 from interfaces.windows.roles.edit_roles import EditRoleModal
 from interfaces.windows.roles.delete_roles import DeleteRoleModal
 from services.Roles.roles import RoleService
+from utils.paths import get_resource_path
 
 class SmallBox(ctk.CTkFrame):
     """Tarjeta de Rol estilizada (versión compacta con acciones)."""
@@ -28,16 +29,12 @@ class SmallBox(ctk.CTkFrame):
         self.btn_container = ctk.CTkFrame(self.actions_frame, fg_color="transparent")
         self.btn_container.pack(side="right")
         
-        # Rutas de iconos
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+        # Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+        buttons_dir = os.path.join("assets", "icons", "buttons")
         
         # Cargar imágenes para botones
-        img_delete = Image.open(os.path.join(buttons_dir, "delete_2550318.png"))
-        self.icon_delete = ctk.CTkImage(light_image=img_delete, size=(20, 20))
-        
-        img_edit = Image.open(os.path.join(buttons_dir, "edit_3808637.png"))
-        self.icon_edit = ctk.CTkImage(light_image=img_edit, size=(20, 20))
+        self.icon_delete = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "delete_2550318.png"))), size=(20, 20))
+        self.icon_edit = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "edit_3808637.png"))), size=(20, 20))
 
         # Botón Eliminar
         self.btn_delete = ctk.CTkButton(
@@ -58,14 +55,13 @@ class SmallBox(ctk.CTkFrame):
         self.btn_edit.pack(side="right", padx=5)
 
         try:
-            pil_img = Image.open(icon_path)
+            pil_img = Image.open(get_resource_path(icon_path))
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(70, 70))
             self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
         except Exception:
             # Fallback con icono genérico
             try:
-                img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
-                icon_other = ctk.CTkImage(light_image=img_other, size=(70, 70))
+                icon_other = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "other_12283713.png"))), size=(70, 70))
                 self.lbl_icon = ctk.CTkLabel(self, image=icon_other, text="")
             except:
                 self.lbl_icon = ctk.CTkLabel(self, text="R", font=("Arial", 60, "bold"), text_color="#ffffff")
@@ -120,13 +116,11 @@ class RolesFrame(ctk.CTkFrame):
         self.right_container = ctk.CTkFrame(self, fg_color="transparent")
         self.right_container.grid(row=0, column=2, sticky="nsew", padx=20, pady=20)
         
-        # Rutas de iconos
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
+        # Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+        buttons_dir = os.path.join("assets", "icons", "buttons")
         
         # Cargar icono agregar
-        img_add = Image.open(os.path.join(buttons_dir, "add_6902311.png"))
-        self.icon_add = ctk.CTkImage(light_image=img_add, size=(24, 24))
+        self.icon_add = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "add_6902311.png"))), size=(24, 24))
 
         # --- BOTÓN AGREGAR ROL ---
         self.btn_add_role = ctk.CTkButton(
@@ -175,10 +169,8 @@ class RolesFrame(ctk.CTkFrame):
             
             # Icono grande de "vacio" o "sin datos"
             try:
-                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-                buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
-                img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
-                icon_other = ctk.CTkImage(light_image=img_other, size=(120, 120))
+                buttons_dir = os.path.join("assets", "icons", "buttons")
+                icon_other = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "other_12283713.png"))), size=(120, 120))
                 lbl_empty_icon = ctk.CTkLabel(empty_container, image=icon_other, text="")
             except:
                 lbl_empty_icon = ctk.CTkLabel(
@@ -208,8 +200,8 @@ class RolesFrame(ctk.CTkFrame):
             lbl_hint.pack()
         else:
             # Si hay roles
-            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-            icons_dir = os.path.join(base_dir, "assets", "icons", "roles_img")
+            # Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+            icons_dir = os.path.join("assets", "icons", "roles_img")
             
             colors = [
                 ("#17a2b8", "#138496", os.path.join(icons_dir, "13808994.png")), 
@@ -245,9 +237,8 @@ class RolesFrame(ctk.CTkFrame):
 
         stats_data = RoleService.get_role_statistics()
         
-        # Rutas de iconos profesionales
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        icons_dir = os.path.join(base_dir, "assets", "icons", "estadisticas")
+        # Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+        icons_dir = os.path.join("assets", "icons", "estadisticas")
         
         stats = [
             {"label": "Total Roles", "value": str(stats_data['total_roles']), "icon_path": os.path.join(icons_dir, "15216915_permisos.png"), "color": "#186ccf"},
@@ -262,15 +253,12 @@ class RolesFrame(ctk.CTkFrame):
             
             # Cargar Icono
             try:
-                img = Image.open(stat["icon_path"])
-                ctk_img = ctk.CTkImage(light_image=img, size=(32, 32))
+                ctk_img = ctk.CTkImage(light_image=Image.open(get_resource_path(stat["icon_path"])), size=(32, 32))
                 lbl_ico = ctk.CTkLabel(stat_card, image=ctk_img, text="")
             except:
                 try:
-                    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-                    buttons_dir = os.path.join(base_dir, "assets", "icons", "buttons")
-                    img_other = Image.open(os.path.join(buttons_dir, "other_12283713.png"))
-                    icon_other = ctk.CTkImage(light_image=img_other, size=(32, 32))
+                    buttons_dir = os.path.join("assets", "icons", "buttons")
+                    icon_other = ctk.CTkImage(light_image=Image.open(get_resource_path(os.path.join(buttons_dir, "other_12283713.png"))), size=(32, 32))
                     lbl_ico = ctk.CTkLabel(stat_card, image=icon_other, text="")
                 except:
                     lbl_ico = ctk.CTkLabel(stat_card, text="◈", font=("Arial", 28))

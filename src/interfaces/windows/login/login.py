@@ -5,6 +5,7 @@ from PIL import Image
 from interfaces.components.mensajes import Alerts
 from interfaces.windows.dashboard.dashboard import DashboardWindow
 import os
+from utils.paths import get_resource_path
 
 class LoginWindow(ctk.CTk):
     def __init__(self):
@@ -28,10 +29,8 @@ class LoginWindow(ctk.CTk):
         self.main_frame = ctk.CTkFrame(self, fg_color="#186ccf", corner_radius=0)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
 
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-
         # 1. Imagen del científico (Al fondo de los adornos)
-        img_path_scientist = os.path.join(base_dir, "assets", "img", "innovative-scientist-explores-virtual-reality-in-cartoon-laboratory-engaging-educational-concepts-in-a-colorful-environment-free-png.png")
+        img_path_scientist = get_resource_path(os.path.join("assets", "img", "innovative-scientist-explores-virtual-reality-in-cartoon-laboratory-engaging-educational-concepts-in-a-colorful-environment-free-png.png"))
         try:
             scientist_img = ctk.CTkImage(light_image=Image.open(img_path_scientist), size=(500, 500))
             self.label_welcome = ctk.CTkLabel(self.main_frame, image=scientist_img, text="")
@@ -53,7 +52,7 @@ class LoginWindow(ctk.CTk):
         self.label_signin = ctk.CTkLabel(self.login_card, text="Iniciar Sesión", font=("Arial", 32, "bold"), text_color="#113e75")
         self.label_signin.pack(pady=(30, 5))
 
-        img_path_aoe = os.path.join(base_dir, "assets", "img", "AOE_img.jpeg")
+        img_path_aoe = get_resource_path(os.path.join("assets", "img", "AOE_img.jpeg"))
         try:
             aoe_img = ctk.CTkImage(light_image=Image.open(img_path_aoe), size=(110, 110))
             self.label_aoe = ctk.CTkLabel(self.login_card, image=aoe_img, text="")

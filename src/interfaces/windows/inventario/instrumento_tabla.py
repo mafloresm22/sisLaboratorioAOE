@@ -2,6 +2,7 @@ import os
 import customtkinter as ctk
 from PIL import Image
 from tksheet import Sheet
+from utils.paths import get_resource_path
 
 _HEADER_BG  = "#4a90d9"
 _TABLE_BG   = "#ffffff"
@@ -36,10 +37,8 @@ _CONSERV_FG: dict[int, str] = {
 _ROW_COLORS = (_TABLE_BG, _ALT_ROW_BG)
 
 
-# Directorio de iconos de botones
-_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+_BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 # ──────────────────────────────────────────────────────────────
 # Componente
@@ -206,7 +205,7 @@ class ContextMenu(ctk.CTkToplevel):
 
     def _load_icons(self):
         def _get(name):
-            p = os.path.join(_BUTTON_ICONS_DIR, name)
+            p = get_resource_path(os.path.join(_BUTTON_ICONS_DIR, name))
             return ctk.CTkImage(Image.open(p), size=(18, 18)) if os.path.exists(p) else None
         
         self.img_view = _get("show_8358982.png")

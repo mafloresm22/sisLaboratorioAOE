@@ -8,11 +8,10 @@ from services.unidad.unidad import UnidadService
 from database.connection import DatabaseConnection
 from models.instrumentos.instrumentos import Instrumento
 from interfaces.components.mensajes import Alerts
+from utils.paths import get_resource_path, get_storage_path
 
-# Directorio de iconos
-_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos (usando get_resource_path para compatibilidad con .exe)
+_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class EditInstrumentoModal(ctk.CTkToplevel):
     def __init__(self, master, instrumento, parent_view=None, usuario=None, **kwargs):
@@ -60,7 +59,7 @@ class EditInstrumentoModal(ctk.CTkToplevel):
         self.header.pack_propagate(False)
 
         try:
-            icon_path = os.path.join(_ICONS_DIR, "edit_3808637.png")
+            icon_path = get_resource_path(os.path.join(_ICONS_DIR, "edit_3808637.png"))
             header_img = ctk.CTkImage(Image.open(icon_path), size=(20, 20))
             ctk.CTkLabel(self.header, text="", image=header_img).pack(side="left", padx=(20, 10))
         except: pass
@@ -218,8 +217,10 @@ class EditInstrumentoModal(ctk.CTkToplevel):
 
     def _load_image_preview(self, path):
         try:
-            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-            full_path = os.path.join(root_dir, path) if not os.path.isabs(path) else path
+            full_path = get_storage_path(path)
+            
+            if not os.path.exists(full_path):
+                full_path = path if os.path.isabs(path) else get_resource_path(path)
             
             if os.path.exists(full_path):
                 img = Image.open(full_path)

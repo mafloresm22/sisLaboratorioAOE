@@ -1,9 +1,10 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
+from utils.paths import get_resource_path
 
-# Cargar las variables del archivo .env
-load_dotenv()
+env_path = get_resource_path(".env")
+load_dotenv(dotenv_path=env_path)
 
 class DatabaseConnection:
     @staticmethod

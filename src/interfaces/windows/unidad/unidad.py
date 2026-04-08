@@ -5,11 +5,10 @@ from services.unidad.unidad import UnidadService
 from interfaces.windows.unidad.create_unidad import CreateUnidadModal
 from interfaces.windows.unidad.edit_unidad import EditUnidadModal
 from interfaces.windows.unidad.delete_unidad import DeleteUnidadModal
+from utils.paths import get_resource_path
 
-# Directorio de iconos de botones
-_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+_BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class UnidadItem(ctk.CTkFrame):
     """Componente que representa un Círculo con Icono y Nombre debajo."""
@@ -27,9 +26,9 @@ class UnidadItem(ctk.CTkFrame):
         self.circle_btn.pack(pady=(0, 15))
         self.circle_btn.pack_propagate(False) 
         
-        # 2. El Icono dentro del círculo (Usando CTkImage)
+        # 2. El Icono dentro del círculo
         try:
-            pil_img = Image.open(icon_path)
+            pil_img = Image.open(get_resource_path(icon_path))
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(65, 65))
             self.lbl_icon = ctk.CTkLabel(self.circle_btn, image=ctk_img, text="")
         except Exception:
@@ -48,7 +47,7 @@ class UnidadItem(ctk.CTkFrame):
         # 4. Botones de Acción
         # Icono Editar
         edit_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(22, 22)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png"))), size=(22, 22)
         )
         self.btn_edit = ctk.CTkButton(
             self.circle_btn, text="", image=edit_img, width=40, height=40, corner_radius=12,
@@ -59,7 +58,7 @@ class UnidadItem(ctk.CTkFrame):
 
         # Icono Eliminar
         delete_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png")), size=(22, 22)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png"))), size=(22, 22)
         )
         self.btn_delete = ctk.CTkButton(
             self.circle_btn, text="", image=delete_img, width=40, height=40, corner_radius=12,
@@ -103,7 +102,7 @@ class UnidadFrame(ctk.CTkFrame):
         self.lbl_title.pack(side="left")
 
         add_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png"))), size=(20, 20)
         )
         self.btn_add = ctk.CTkButton(
             self.header, text=" Agregar Unidad", image=add_img, width=180, height=45,
@@ -130,9 +129,8 @@ class UnidadFrame(ctk.CTkFrame):
             
         unidades = UnidadService.get_all_unidades()
         
-        # Paleta de colores variada y mapeo de iconos profesionales
-        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        icons_dir = os.path.join(base_path, "assets", "icons", "unidad_img")
+        # Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+        icons_dir = os.path.join("assets", "icons", "unidad_img")
         
         colors = [
             ("#3498db", "#2980b9", os.path.join(icons_dir, "ruler_7927154.png")),
@@ -149,7 +147,7 @@ class UnidadFrame(ctk.CTkFrame):
             empty_frame.grid(row=0, column=0, columnspan=5, pady=100)
             
             show_img = ctk.CTkImage(
-                Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(80, 80)
+                Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png"))), size=(80, 80)
             )
             ctk.CTkLabel(empty_frame, text="", image=show_img).pack()
             ctk.CTkLabel(

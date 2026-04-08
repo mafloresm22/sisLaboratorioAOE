@@ -6,11 +6,10 @@ from interfaces.windows.usuarios.create_usuarios import CreateUsuarioModal
 from interfaces.windows.usuarios.edit_usuarios import EditUsuarioModal
 from interfaces.windows.usuarios.restablecer_password import RestablecerPasswordModal
 from interfaces.windows.usuarios.delete_usuarios import DeleteUsuarioModal
+from utils.paths import get_resource_path
 
-# Directorio de iconos de botones
-_BUTTON_ICONS_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "..", "assets", "icons", "buttons"
-))
+# Directorio de iconos de botones (usando rutas relativas para get_resource_path)
+_BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class UserBox(ctk.CTkFrame):
     def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
@@ -42,8 +41,7 @@ class UserBox(ctk.CTkFrame):
         admin_img = None
         if is_admin:
             try:
-                base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-                admin_icon_path = os.path.join(base_dir, "assets", "icons", "roles_img", "13808994.png")
+                admin_icon_path = get_resource_path(os.path.join("assets", "icons", "roles_img", "13808994.png"))
                 pil_admin = Image.open(admin_icon_path)
                 admin_img = ctk.CTkImage(light_image=pil_admin, size=(20, 20))
             except Exception:
@@ -66,7 +64,7 @@ class UserBox(ctk.CTkFrame):
         
         # Botón Eliminar
         delete_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "delete_2550318.png"))), size=(20, 20)
         )
         self.btn_delete = ctk.CTkButton(
             self.btn_container, text="", image=delete_img, width=38, height=38, corner_radius=19,
@@ -77,7 +75,7 @@ class UserBox(ctk.CTkFrame):
  
         # Botón Editar
         edit_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "edit_3808637.png"))), size=(20, 20)
         )
         self.btn_edit = ctk.CTkButton(
             self.btn_container, text="", image=edit_img, width=38, height=38, corner_radius=19,
@@ -88,7 +86,7 @@ class UserBox(ctk.CTkFrame):
  
         # Botón Restablecer password
         reset_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png"))), size=(20, 20)
         )
         self.btn_reset = ctk.CTkButton(
             self.btn_container, text="", image=reset_img, width=38, height=38, corner_radius=19,
@@ -98,7 +96,7 @@ class UserBox(ctk.CTkFrame):
         self.btn_reset.pack(side="right", padx=5)
 
         try:
-            pil_img = Image.open(icon_path)
+            pil_img = Image.open(get_resource_path(icon_path))
             ctk_img = ctk.CTkImage(light_image=pil_img, size=(70, 70))
             self.lbl_icon = ctk.CTkLabel(self, image=ctk_img, text="")
         except Exception:
@@ -151,7 +149,7 @@ class UsuariosFrame(ctk.CTkFrame):
         
         # Botón agregar usuario
         add_img = ctk.CTkImage(
-            Image.open(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png")), size=(20, 20)
+            Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "add_6902311.png"))), size=(20, 20)
         )
         self.btn_add_user = ctk.CTkButton(
             self.right_container, 
@@ -198,14 +196,15 @@ class UsuariosFrame(ctk.CTkFrame):
             empty_container = ctk.CTkFrame(self.cards_scroll, fg_color="transparent")
             empty_container.pack(fill="both", expand=True, pady=100)
             show_img = ctk.CTkImage(
-                Image.open(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png")), size=(100, 100)
+                Image.open(get_resource_path(os.path.join(_BUTTON_ICONS_DIR, "show_8358982.png"))), size=(100, 100)
             )
             lbl_empty_icon = ctk.CTkLabel(empty_container, text="", image=show_img)
             lbl_empty_icon.pack()
             lbl_empty_text = ctk.CTkLabel(empty_container, text="No hay Usuarios registrados", font=("Arial", 22, "bold"), text_color="#95a5a6")
             lbl_empty_text.pack(pady=20)
         else:
-            icons_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")), "assets", "icons", "dashboard")
+            # Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+            icons_dir = os.path.join("assets", "icons", "dashboard")
             user_icon_path = os.path.join(icons_dir, "7816987_usuario.png")
             
             # Paleta de colores consistente con roles
@@ -242,9 +241,8 @@ class UsuariosFrame(ctk.CTkFrame):
 
         stats_data = UsuarioService.get_usuario_statistics()
         
-        # Rutas de iconos profesionales
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        icons_dir = os.path.join(base_dir, "assets", "icons", "estadisticas")
+        # Directorios de recursos del sistema (usando rutas relativas para get_resource_path)
+        icons_dir = os.path.join("assets", "icons", "estadisticas")
         
         stats = [
             {"label": "Total Usuarios", "value": str(stats_data['total_usuarios']), "icon_path": os.path.join(icons_dir, "878516_usuarios.png"), "color": "#186ccf"},
@@ -259,8 +257,7 @@ class UsuariosFrame(ctk.CTkFrame):
             
             # Cargar Icono PNG
             try:
-                img = Image.open(stat["icon_path"])
-                ctk_img = ctk.CTkImage(light_image=img, size=(32, 32))
+                ctk_img = ctk.CTkImage(light_image=Image.open(get_resource_path(stat["icon_path"])), size=(32, 32))
                 lbl_ico = ctk.CTkLabel(stat_card, image=ctk_img, text="")
             except:
                 lbl_ico = ctk.CTkLabel(stat_card, text="📊", font=("Arial", 28))

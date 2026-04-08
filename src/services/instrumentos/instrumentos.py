@@ -1,5 +1,6 @@
 from database.connection import DatabaseConnection
 from models.instrumentos.instrumentos import Instrumento
+from utils.paths import get_storage_path
 import os
 import shutil
 from datetime import datetime
@@ -7,26 +8,19 @@ from datetime import datetime
 class InstrumentoService:
     @staticmethod
     def _save_instrumento_image(source_path):
-        """Copia la imagen a assets/instrumentos y devuelve la ruta relativa guardada."""
         if not source_path:
             return source_path
         
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-        relative_folder = os.path.join("assets", "instrumentos")
-        storage_dir = os.path.join(root_dir, relative_folder)
+        relative_folder = os.path.join("storage", "instrumentos")
+        storage_dir = get_storage_path(relative_folder)
         
         abs_source = os.path.abspath(source_path)
         if not os.path.isfile(abs_source):
-            abs_source = os.path.join(root_dir, source_path)
-            if not os.path.isfile(abs_source):
-                return source_path
+            return source_path
 
         if os.path.dirname(os.path.abspath(abs_source)) == os.path.abspath(storage_dir):
             filename = os.path.basename(abs_source)
             return os.path.join(relative_folder, filename).replace("\\", "/")
-            
-        if not os.path.exists(storage_dir):
-            os.makedirs(storage_dir, exist_ok=True)
             
         filename = os.path.basename(abs_source)
         base, ext = os.path.splitext(filename)
@@ -35,10 +29,11 @@ class InstrumentoService:
         dest_path = os.path.join(storage_dir, unique_name)
         
         try:
+            os.makedirs(storage_dir, exist_ok=True)
             shutil.copy2(abs_source, dest_path)
             return os.path.join(relative_folder, unique_name).replace("\\", "/")
         except Exception as e:
-            print(f"🔴 Error al guardar imagen de instrumento en assets/instrumentos: {e}")
+            print(f"🔴 Error al guardar imagen de instrumento: {e}")
             return source_path
 
     @staticmethod
@@ -216,9 +211,22 @@ class InstrumentoService:
         if not conn: return False
         try:
             cursor = conn.cursor()
+            cursor.execute("SELECT imagenInstrumento FROM Instrumento WHERE idInstrumento = %s", (id_instrumento,))
+            fila = cursor.fetchone()
+            imagen_path = fila[0] if fila else None
+            
             query = "DELETE FROM Instrumento WHERE idInstrumento = %s"
             cursor.execute(query, (id_instrumento,))
             conn.commit()
+
+            if imagen_path and "storage/instrumentos" in imagen_path:
+                full_path = get_storage_path(imagen_path)
+                if os.path.exists(full_path):
+                    try:
+                        os.remove(full_path)
+                    except Exception as e:
+                        print(f"⚠️ No se pudo eliminar el archivo físico: {e}")
+
             return True
         except Exception as e:
             print(f"🔴 Error SQL (delete_instrumento): {e}")
