@@ -53,6 +53,8 @@ CREATE TABLE Prestamo (
     idPrestamo SERIAL PRIMARY KEY,
     usuarioId INTEGER REFERENCES Usuarios(idUsuarios),
     fechaSolicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fechaLimitePrestamo TIMESTAMP,
+    motivoPrestamo TEXT DEFAULT 'Clases en Laboratorio',
     estadoPrestamo VARCHAR(20) DEFAULT 'pendiente' -- 'activo', 'devuelto', 'atrasado'
 );
 
@@ -60,7 +62,7 @@ CREATE TABLE DetallePrestamo (
     idDetalle SERIAL PRIMARY KEY,
     prestamoId INTEGER REFERENCES Prestamo(idPrestamo) ON DELETE CASCADE,
     instrumentoId INTEGER REFERENCES Instrumento(idInstrumento),
-    cantidadSolicitada INTEGER NOT NULL,
+    cantidadSolicitada DOUBLE PRECISION NOT NULL,
     fechaDevolucion TIMESTAMP,
     estadoEntrega VARCHAR(50),
     estadoDevolucion VARCHAR(50)
