@@ -12,14 +12,14 @@ from utils.paths import get_resource_path
 _BUTTON_ICONS_DIR = os.path.join("assets", "icons", "buttons")
 
 class UserBox(ctk.CTkFrame):
-    def __init__(self, master, username, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
+    def __init__(self, master, username, full_name, role_name, icon_path, bg_color, hover_color, on_edit=None, on_delete=None, on_reset=None):
         is_admin = role_name.lower() == "administrador"
         
         if is_admin:
             bg_color = "#2482e0" 
             hover_color = "#54a2f0"
             
-        super().__init__(master, fg_color=bg_color, corner_radius=15, height=140)
+        super().__init__(master, fg_color=bg_color, corner_radius=15, height=170)
         self.pack_propagate(False)
         
         if is_admin:
@@ -29,9 +29,14 @@ class UserBox(ctk.CTkFrame):
         self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.header_frame.pack(fill="x", padx=15, pady=(15, 0))
         
-        # Nombre de Usuario
-        self.lbl_user = ctk.CTkLabel(self.header_frame, text=username, font=("Arial", 19, "bold"), text_color="white")
+        # Nombre Completo
+        full_name_clean = str(full_name).replace("None", "").strip() or username
+        self.lbl_user = ctk.CTkLabel(self.header_frame, text=full_name_clean, font=("Arial", 16, "bold"), text_color="white")
         self.lbl_user.pack(anchor="w")
+        
+        # Username pequeno
+        self.lbl_username = ctk.CTkLabel(self.header_frame, text=f"({username})", font=("Arial", 11), text_color="#d0d0d0")
+        self.lbl_username.pack(anchor="w", pady=(0, 2))
         
         # Rol
         is_admin = role_name.lower() == "administrador"
@@ -55,8 +60,9 @@ class UserBox(ctk.CTkFrame):
         self.lbl_role.pack(anchor="w", pady=(2, 0))
         
         # --- Footer con Botones de Acción ---
-        self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.actions_frame.pack(side="bottom", fill="x", padx=12, pady=12)
+        self.actions_frame = ctk.CTkFrame(self, fg_color="transparent", height=45)
+        self.actions_frame.pack(side="bottom", fill="x", padx=12, pady=(0, 12))
+        self.actions_frame.pack_propagate(False)
         
         # Contenedor para alinear los botones a la derecha
         self.btn_container = ctk.CTkFrame(self.actions_frame, fg_color="transparent")
@@ -221,9 +227,20 @@ class UsuariosFrame(ctk.CTkFrame):
                 col = i % 3
                 colors = paleta[i % len(paleta)]
                 
+                nombres = getattr(user, "nombresCompletosUsuarios", "") or ""
+                apellidos = getattr(user, "apellidosCompletosUsuarios", "") or ""
+                
+                if nombres and apellidos:
+                    full_name = f"{nombres} {apellidos}"
+                elif nombres or apellidos:
+                    full_name = f"{nombres}{apellidos}"
+                else:
+                    full_name = user.nombreUsuarios
+
                 card = UserBox(
                     self.cards_scroll,
                     username=user.nombreUsuarios,
+                    full_name=full_name,
                     role_name=user.nombreRol,
                     icon_path=user_icon_path,
                     bg_color=colors[0],

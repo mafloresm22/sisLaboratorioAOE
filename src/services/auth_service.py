@@ -24,7 +24,9 @@ class AuthService:
                     u.nombreUsuarios, 
                     u.passwordUsuarios, 
                     u.rolId, 
-                    r.nombreRol 
+                    r.nombreRol,
+                    u."nombresCompletosUsuarios",
+                    u."apellidosCompletosUsuarios"
                 FROM Usuarios u
                 JOIN Rol r ON u.rolId = r.idRol
                 WHERE u.nombreUsuarios = %s
@@ -33,7 +35,7 @@ class AuthService:
             usuario = cursor.fetchone()
             
             if usuario:
-                id_user, nombre, hash_almacenado, rol_id, nombre_rol = usuario
+                id_user, nombre, hash_almacenado, rol_id, nombre_rol, nombres_completos, apellidos_completos = usuario
                 
                 # bcrypt necesita los datos en formato bytes para comparar
                 if bcrypt.checkpw(password_ingresado.encode('utf-8'), hash_almacenado.encode('utf-8')):
@@ -41,7 +43,9 @@ class AuthService:
                         "idUsuarios": id_user, 
                         "nombreUsuarios": nombre, 
                         "rolId": rol_id, 
-                        "nombreRol": nombre_rol
+                        "nombreRol": nombre_rol,
+                        "nombresCompletosUsuarios": nombres_completos,
+                        "apellidosCompletosUsuarios": apellidos_completos
                     }
             
             return None

@@ -25,6 +25,8 @@ CREATE TABLE Laboratorios (
 CREATE TABLE Usuarios (
     idUsuarios SERIAL PRIMARY KEY,
     nombreUsuarios VARCHAR(100) NOT NULL,
+    nombresCompletosUsuarios VARCHAR(100) NOT NULL,
+    apellidosCompletosUsuarios VARCHAR(100) NOT NULL,
     passwordUsuarios TEXT NOT NULL,
     rolId INTEGER REFERENCES Rol(idRol)
 );

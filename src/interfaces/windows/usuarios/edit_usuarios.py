@@ -12,6 +12,8 @@ class EditUsuarioModal(ctk.CTkToplevel):
         # Datos iniciales del usuario
         self.user_id = user_data.idUsuarios
         self.old_nombre = user_data.nombreUsuarios
+        self.old_nombres = user_data.nombresCompletosUsuarios
+        self.old_apellidos = user_data.apellidosCompletosUsuarios
         self.old_rol_id = user_data.rolId
         self.old_rol_nombre = user_data.nombreRol
         
@@ -31,7 +33,7 @@ class EditUsuarioModal(ctk.CTkToplevel):
         # --- MODAL CONFIG ---
         self.overrideredirect(True)
         self.width = 500
-        self.height = 350
+        self.height = 480
         
         # Centrar el modal en pantalla
         self.update_idletasks()
@@ -80,6 +82,27 @@ class EditUsuarioModal(ctk.CTkToplevel):
         )
         self.entry_nombre.pack(fill="x", pady=(0, 15))
         self.entry_nombre.insert(0, self.old_nombre)
+
+        # Campos: Nombres y Apellidos
+        self.row_names = ctk.CTkFrame(self.body, fg_color="transparent")
+        self.row_names.pack(fill="x", pady=(0, 15))
+        self.row_names.grid_columnconfigure((0, 1), weight=1)
+
+        # Nombres
+        self.col_nombres = ctk.CTkFrame(self.row_names, fg_color="transparent")
+        self.col_nombres.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        ctk.CTkLabel(self.col_nombres, text="Nombres", font=("Arial", 14, "bold"), text_color="#34495e").pack(anchor="w", pady=(0, 5))
+        self.entry_nombres = ctk.CTkEntry(self.col_nombres, height=45, corner_radius=8, font=("Arial", 14), border_width=2)
+        self.entry_nombres.pack(fill="x")
+        self.entry_nombres.insert(0, self.old_nombres or "")
+
+        # Apellidos
+        self.col_apellidos = ctk.CTkFrame(self.row_names, fg_color="transparent")
+        self.col_apellidos.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        ctk.CTkLabel(self.col_apellidos, text="Apellidos", font=("Arial", 14, "bold"), text_color="#34495e").pack(anchor="w", pady=(0, 5))
+        self.entry_apellidos = ctk.CTkEntry(self.col_apellidos, height=45, corner_radius=8, font=("Arial", 14), border_width=2)
+        self.entry_apellidos.pack(fill="x")
+        self.entry_apellidos.insert(0, self.old_apellidos or "")
         
         # Campo: Rol
         self.lbl_rol = ctk.CTkLabel(self.body, text="Rol del Usuario", font=("Arial", 14, "bold"), text_color="#34495e")
@@ -159,20 +182,25 @@ class EditUsuarioModal(ctk.CTkToplevel):
 
     def update_usuario(self):
         nuevo_nombre = self.entry_nombre.get().strip()
+        nuevos_nombres = self.entry_nombres.get().strip()
+        nuevos_apellidos = self.entry_apellidos.get().strip()
         nuevo_rol_nombre = self.role_var.get()
         
-        if not nuevo_nombre:
-            Alerts.show_error("Campo requerido", "El nombre de usuario no puede estar vacío.", master=self)
+        if not nuevo_nombre or not nuevos_nombres or not nuevos_apellidos:
+            Alerts.show_error("Campo requerido", "Todos los campos son obligatorios.", master=self)
             return
             
         nuevo_rol_id = self.roles_map.get(nuevo_rol_nombre)
         
         # Verificar si hubo cambios
-        if nuevo_nombre == self.old_nombre and nuevo_rol_id == self.old_rol_id:
+        if (nuevo_nombre == self.old_nombre and 
+            nuevos_nombres == self.old_nombres and 
+            nuevos_apellidos == self.old_apellidos and 
+            nuevo_rol_id == self.old_rol_id):
             self.close_modal()
             return
 
-        resultado = UsuarioService.update_usuario(self.user_id, nuevo_nombre, nuevo_rol_id)
+        resultado = UsuarioService.update_usuario(self.user_id, nuevo_nombre, nuevo_rol_id, nuevos_nombres, nuevos_apellidos)
         
         if resultado == "exists":
             Alerts.show_warning("Ya existe", f"El nombre '{nuevo_nombre}' ya está siendo usado por otro usuario.", master=self)

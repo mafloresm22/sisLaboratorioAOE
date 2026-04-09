@@ -25,7 +25,7 @@ class CreateUsuarioModal(ctk.CTkToplevel):
         # --- MODAL ---
         self.overrideredirect(True)
         self.width = 500
-        self.height = 350
+        self.height = 480
         
         # Centrar el modal en pantalla
         self.update_idletasks()
@@ -74,7 +74,26 @@ class CreateUsuarioModal(ctk.CTkToplevel):
             self.body, placeholder_text="Ej: juan.perez", 
             height=45, corner_radius=8, font=("Arial", 14), border_width=2
         )
-        self.entry_user.pack(fill="x", pady=(0, 20))
+        self.entry_user.pack(fill="x", pady=(0, 15))
+        
+        # CAMPO: Nombres Completos y Apellidos
+        self.row_names = ctk.CTkFrame(self.body, fg_color="transparent")
+        self.row_names.pack(fill="x", pady=(0, 15))
+        self.row_names.grid_columnconfigure((0, 1), weight=1)
+
+        # Nombres
+        self.col_nombres = ctk.CTkFrame(self.row_names, fg_color="transparent")
+        self.col_nombres.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+        ctk.CTkLabel(self.col_nombres, text="Nombres", font=("Arial", 14, "bold"), text_color="#34495e").pack(anchor="w", pady=(0, 5))
+        self.entry_nombres = ctk.CTkEntry(self.col_nombres, placeholder_text="Ej: Juan", height=45, corner_radius=8, font=("Arial", 14), border_width=2)
+        self.entry_nombres.pack(fill="x")
+
+        # Apellidos
+        self.col_apellidos = ctk.CTkFrame(self.row_names, fg_color="transparent")
+        self.col_apellidos.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
+        ctk.CTkLabel(self.col_apellidos, text="Apellidos", font=("Arial", 14, "bold"), text_color="#34495e").pack(anchor="w", pady=(0, 5))
+        self.entry_apellidos = ctk.CTkEntry(self.col_apellidos, placeholder_text="Ej: Pérez", height=45, corner_radius=8, font=("Arial", 14), border_width=2)
+        self.entry_apellidos.pack(fill="x")
         
         # --- PASSWORD Y ROL ---
         self.row_fields = ctk.CTkFrame(self.body, fg_color="transparent")
@@ -183,11 +202,13 @@ class CreateUsuarioModal(ctk.CTkToplevel):
     def save_usuario(self):
         nombre = self.entry_user.get().strip()
         password = self.entry_pass.get().strip()
+        nombres = self.entry_nombres.get().strip()
+        apellidos = self.entry_apellidos.get().strip()
         rol_name = self.role_var.get()
         
         # Validaciones
-        if not nombre or not password:
-            Alerts.show_error("Campos requeridos", "Usuario y contraseña son obligatorios.", master=self)
+        if not nombre or not password or not nombres or not apellidos:
+            Alerts.show_error("Campos requeridos", "Todos los campos (Usuario, Contraseña, Nombres y Apellidos) son obligatorios.", master=self)
             return
             
         if rol_name == "Sin Roles Disponibles":
@@ -197,7 +218,7 @@ class CreateUsuarioModal(ctk.CTkToplevel):
         rol_id = self.roles_map.get(rol_name)
         
         # Llamar al servicio (el servicio se encarga de encriptar)
-        resultado = UsuarioService.create_usuario(nombre, password, rol_id)
+        resultado = UsuarioService.create_usuario(nombre, password, rol_id, nombres, apellidos)
         
         if resultado == "exists":
             Alerts.show_warning("Usuario Existente", f"El nombre '{nombre}' ya está en uso.", master=self)

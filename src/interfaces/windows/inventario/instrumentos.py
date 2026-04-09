@@ -280,8 +280,40 @@ class InstrumentosFrame(ctk.CTkFrame):
 
     def on_export_excel(self) -> None:
         from interfaces.components.mensajes import Alerts
-        # Aquí irá la lógica de exportación
-        Alerts.show_info("Exportar", "Función de exportación de inventario en desarrollo.", master=self)
+        from tkinter import filedialog
+        from utils.excel_exporter import exportar_instrumentos_excel
+
+        if not self.filtered_data:
+            Alerts.show_info("Exportar", "No hay instrumentos para exportar.", master=self.master)
+            return
+
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Archivos de Excel", "*.xlsx")],
+            title="Guardar Inventario"
+        )
+        
+        if not filename:
+            return
+            
+        try:
+            # Obtener el nombre completo del usuario desde el diccionario de sesión
+            nombre_responsable = "Usuario Actual"
+            if self.usuario:
+                nombres = self.usuario.get("nombresCompletosUsuarios", "")
+                apellidos = self.usuario.get("apellidosCompletosUsuarios", "")
+                
+                if nombres or apellidos:
+                    nombre_responsable = f"{nombres} {apellidos}".strip()
+                else:
+                    # Fallback al username si no hay nombres completos
+                    nombre_responsable = self.usuario.get("nombreUsuarios", "Usuario")
+                    
+            # Exportar datos filtrados (los que se estan viendo en tabla)
+            exportar_instrumentos_excel(self.filtered_data, filename, nombre_responsable)
+            Alerts.show_info("Exportación Exitosa", f"Los datos fueron exportados en:\n{filename}", master=self.master)
+        except Exception as e:
+            Alerts.show_error("Error de Exportación", f"No se pudo guardar el archivo Excel:\n{str(e)}", master=self.master)
 
     def prev_page(self) -> None:
         if self.current_page > 1:

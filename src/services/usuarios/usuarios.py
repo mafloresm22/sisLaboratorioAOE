@@ -13,14 +13,23 @@ class UsuarioService:
                     u.idUsuarios, 
                     u.nombreUsuarios, 
                     u.rolId, 
-                    r.nombreRol 
+                    r.nombreRol,
+                    u."nombresCompletosUsuarios",
+                    u."apellidosCompletosUsuarios"
                 FROM Usuarios u
                 LEFT JOIN Rol r ON u.rolId = r.idRol
                 ORDER BY u.idUsuarios ASC
             """
             cursor.execute(query)
             return [
-                Usuario(idUsuarios=u[0], nombreUsuarios=u[1], rolId=u[2], nombreRol=u[3] or "Sin Rol") 
+                Usuario(
+                    idUsuarios=u[0], 
+                    nombreUsuarios=u[1], 
+                    rolId=u[2], 
+                    nombreRol=u[3] or "Sin Rol",
+                    nombresCompletosUsuarios=u[4],
+                    apellidosCompletosUsuarios=u[5]
+                ) 
                 for u in cursor.fetchall()
             ]
         except Exception as e:
@@ -30,7 +39,7 @@ class UsuarioService:
             if conn: conn.close()
 
     @staticmethod
-    def create_usuario(nombre, password, rol_id):
+    def create_usuario(nombre, password, rol_id, nombres_completos, apellidos_completos):
         from services.auth_service import AuthService
         hashed_pw = AuthService.hash_password(password)
         conn = DatabaseConnection.get_connection()
@@ -45,10 +54,10 @@ class UsuarioService:
 
             # 2. Insertar si no existe
             query = """
-                INSERT INTO Usuarios (nombreUsuarios, passwordUsuarios, rolId) 
-                VALUES (%s, %s, %s) RETURNING idUsuarios
+                INSERT INTO Usuarios (nombreUsuarios, passwordUsuarios, rolId, "nombresCompletosUsuarios", "apellidosCompletosUsuarios") 
+                VALUES (%s, %s, %s, %s, %s) RETURNING idUsuarios
             """
-            cursor.execute(query, (nombre.strip(), hashed_pw, rol_id))
+            cursor.execute(query, (nombre.strip(), hashed_pw, rol_id, nombres_completos.strip(), apellidos_completos.strip()))
             new_id = cursor.fetchone()[0]
             conn.commit()
             return new_id
@@ -85,7 +94,7 @@ class UsuarioService:
             if conn: conn.close()
 
     @staticmethod
-    def update_usuario(id_usuario, nuevo_nombre, nuevo_rol_id):
+    def update_usuario(id_usuario, nuevo_nombre, nuevo_rol_id, nuevos_nombres, nuevos_apellidos):
         conn = DatabaseConnection.get_connection()
         if not conn: return False
         try:
@@ -97,8 +106,12 @@ class UsuarioService:
                 return "exists"
 
             # 2. Actualizar
-            query = "UPDATE Usuarios SET nombreUsuarios = %s, rolId = %s WHERE idUsuarios = %s"
-            cursor.execute(query, (nuevo_nombre.strip(), nuevo_rol_id, id_usuario))
+            query = """
+                UPDATE Usuarios 
+                SET nombreUsuarios = %s, rolId = %s, "nombresCompletosUsuarios" = %s, "apellidosCompletosUsuarios" = %s 
+                WHERE idUsuarios = %s
+            """
+            cursor.execute(query, (nuevo_nombre.strip(), nuevo_rol_id, nuevos_nombres.strip(), nuevos_apellidos.strip(), id_usuario))
             conn.commit()
             return True
         except Exception as e:

@@ -106,16 +106,20 @@ class InstrumentoService:
         try:
             cursor = conn.cursor()
             
-            # Verificar si ya existe
+            # Verificar si ya existe (Mismo nombre, marca, modelo, serie, color y tamaño)
             check_query = """
                 SELECT idInstrumento FROM Instrumento 
-                WHERE modeloInstrumento IS NOT DISTINCT FROM %s 
+                WHERE descripcionInstrumento IS NOT DISTINCT FROM %s
+                  AND marcaInstrumento IS NOT DISTINCT FROM %s
+                  AND modeloInstrumento IS NOT DISTINCT FROM %s 
                   AND serieInstrumento IS NOT DISTINCT FROM %s 
                   AND colorInstrumento IS NOT DISTINCT FROM %s 
                   AND tamanoInstrumento IS NOT DISTINCT FROM %s
                 LIMIT 1
             """
             cursor.execute(check_query, (
+                instrumento.descripcionInstrumento,
+                instrumento.marcaInstrumento,
                 instrumento.modeloInstrumento,
                 instrumento.serieInstrumento,
                 instrumento.colorInstrumento,
