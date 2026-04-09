@@ -104,7 +104,14 @@ class InstrumentosFrame(ctk.CTkFrame):
 
         _btn(" Ver Leyenda",       "#3498db", "#2980b9", self.on_show_legend,    "show_8358982.png"  ).pack(side="left", padx=(0, 10))
         _btn(" Importar Excel",    "#f54977", "#d11a42", self.on_import_excel,   "other_12283713.png", w=160).pack(side="left", padx=(0, 10))
-        _btn(" Agregar Instrumento", "#27ae60", "#219150", self.on_add_instrumento,"add_6902311.png",  w=190).pack(side="left")
+        _btn(" Agregar Instrumento", "#27ae60", "#219150", self.on_add_instrumento,"add_6902311.png",  w=190).pack(side="left", padx=(0, 10))
+
+        # Botón Exportar
+        img_export = ctk.CTkImage(Image.open(get_resource_path(os.path.join("assets", "icons", "buttons", "excel_3979345.png"))), size=(20, 20))
+        ctk.CTkButton(
+            actions, text="", image=img_export, width=45, height=45, corner_radius=22,
+            fg_color="#27ae60", hover_color="#219150", command=self.on_export_excel
+        ).pack(side="left")
 
     def _build_table(self) -> None:
         container = ctk.CTkFrame(self, fg_color="transparent")
@@ -270,6 +277,11 @@ class InstrumentosFrame(ctk.CTkFrame):
         else:
             if "cancelada" not in message.lower():
                 Alerts.show_error("Error de Importación", message, master=self.master)
+
+    def on_export_excel(self) -> None:
+        from interfaces.components.mensajes import Alerts
+        # Aquí irá la lógica de exportación
+        Alerts.show_info("Exportar", "Función de exportación de inventario en desarrollo.", master=self)
 
     def prev_page(self) -> None:
         if self.current_page > 1:
