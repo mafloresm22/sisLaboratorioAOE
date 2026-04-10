@@ -5,6 +5,7 @@ import os
 from utils.paths import get_resource_path
 from interfaces.windows.roles.roles import RolesFrame
 from interfaces.windows.unidad.unidad import UnidadFrame
+from interfaces.windows.dashboard.Inicio import InicioFrame
 from interfaces.windows.usuarios.usuarios import UsuariosFrame
 from interfaces.windows.laboratorios.laboratorios import LaboratoriosFrame
 from interfaces.windows.inventario.instrumentos import InstrumentosFrame
@@ -112,8 +113,7 @@ class DashboardWindow(ctk.CTkToplevel):
             "Módulos": ["Roles", "Unidad", "Laboratorios"],
             "Usuarios": None,
             "Inventario": None,
-            "Préstamos": None,
-            "Reportes": None
+            "Préstamos": None
         }
         
         # Mapeo de iconos para la Navbar
@@ -122,8 +122,7 @@ class DashboardWindow(ctk.CTkToplevel):
             "Módulos": os.path.join(icons_dir, "13051347_roles.png"),
             "Usuarios": os.path.join(icons_dir, "7816987_usuario.png"),
             "Inventario": os.path.join(icons_dir, "11458663_inventario.png"),
-            "Préstamos": os.path.join(icons_dir, "772938_prestamo.png"),
-            "Reportes": os.path.join(icons_dir, "8916436_Reportes.png")
+            "Préstamos": os.path.join(icons_dir, "772938_prestamo.png")
         }
         
         self.nav_buttons = {}
@@ -228,11 +227,8 @@ class DashboardWindow(ctk.CTkToplevel):
         self.geometry(f"{width}x{height}+{x}+{y}")
 
     def create_views(self):
-        """Crea los marcos de contenido para cada opción del menú."""
         # --- 1. Vista INICIO ---
-        dash_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-        ctk.CTkLabel(dash_frame, text="Vista General del Sistema", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
-        self.views["Inicio"] = dash_frame
+        self.views["Inicio"] = InicioFrame(self.main_content)
         
         # --- 2. Vista MÓDULOS (Dashboard de Categorías) ---
         mod_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
@@ -288,11 +284,6 @@ class DashboardWindow(ctk.CTkToplevel):
         
         # --- 6. Vista PRÉSTAMOS ---
         self.views["Préstamos"] = PrestamosFrame(self.main_content, usuario=self.usuario)
-        
-        # --- 7. Vista REPORTES ---
-        rep_frame = ctk.CTkFrame(self.main_content, fg_color="white", corner_radius=15)
-        ctk.CTkLabel(rep_frame, text="Analíticas y Reportes", font=("Arial", 28, "bold"), text_color="#2c3e50").pack(pady=40)
-        self.views["Reportes"] = rep_frame
 
     def handle_nav_click(self, val, parent_name):
         """Maneja el click en un OptionMenu"""

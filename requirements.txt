@@ -5,3 +5,5 @@ bcrypt
 CTkMessagebox
 openpyxl
 tksheet
+plotly
+tkinterweb
